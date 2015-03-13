@@ -13,6 +13,6 @@ init_db()
 
 Start a local instance:
 
-```python
+```bash
 python reco.py
 ```
