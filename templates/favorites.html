@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Favorites{% endblock %}
+{% block extraheader %}{% endblock %}
+{% block body %}
+  <h1>Music recommendations</h1>
+  <p>What should you listen to next?</p>
+  <h2>Which artists do you like?</h2>
+    <form action="{{ url_for('postfavorites') }}" method="post" name="login">
+      {{ form.hidden_tag() }}
+      <p>
+          Artist 1:<br>{{ form.a1(size=80) }}<br>
+          Artist 2:<br>{{ form.a2(size=80) }}<br>          
+          Artist 3:<br>{{ form.a3(size=80) }}<br>                    
+      </p>
+      <p><input type="submit" value="submit"></p>
+  </form>
+{% endblock %}

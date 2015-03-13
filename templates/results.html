@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Favorites{% endblock %}
+{% block extraheader %}{% endblock %}
+{% block body %}
+  <h1>Maybe you should check out:</h1>
+  <ul>
+   {% for result in results %}
+		<li><h3>{{ result.display|safe }}</h3></li>
+	{% endfor %}
+	</ul>
+{% endblock %}

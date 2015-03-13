@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Artists{% endblock %}
+{% block extraheader %}{% endblock %}
+{% block body %}
+  <h1>We know about the following artists:</h1>
+  <ul>
+   {% for artist in artists %}
+		<li>{{ artist.display|safe }}</li>
+	{% endfor %}
+	</ul>
+{% endblock %}
