@@ -2,10 +2,15 @@
 {% block title %}Favorites{% endblock %}
 {% block extraheader %}{% endblock %}
 {% block body %}
-  <h1>Maybe you should check out:</h1>
-  <ul>
-   {% for result in results %}
-		<li><h3>{{ result.display|safe }}</h3></li>
+	<h1>Maybe you should check out:</h1>
+
+	{% for result in results %}
+		<h3>{{ result.display|safe }}</h3>
+		
+		{% for album_cover in result.album_covers %}
+			<img src='{{ album_cover|safe }}'></img>
+		{% endfor %}
+		
 	{% endfor %}
-	</ul>
+
 {% endblock %}
