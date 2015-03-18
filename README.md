@@ -11,6 +11,8 @@ from reco import init_db
 init_db()
 ```
 
+For fetching album covers from Discogs you will need to sign up for a Discogs account and create a new application to get an API consumer key and consumer secret. Add your consumer key, consumer secret and user agent to config.py.
+
 Start a local instance:
 
 ```bash
