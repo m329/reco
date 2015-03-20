@@ -104,7 +104,7 @@ def get_album_cover_urls_for_artist(a,N=3):
 	d = discogs_search_artist(a)
 	
 	try:
-		return [i['thumb'] for i in d['results']][:N]
+		return [i['thumb'] for i in d['results'] if i['thumb'] != ''][:N]
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
 		return []
