@@ -4,7 +4,20 @@ A simple proof-of-concept for doing artist/band recommendations using only user-
 
 ## How to use
 
-First initialize the sqlite database. Call init_db() from the python interpreter:
+Clone this repository. Then, create a Python virtual environment for this project and activate it:
+
+```bash
+virtualenv venv
+source venv/bin/activate
+```
+
+Install the requirements (you may need to install pip first):
+
+```bash
+pip install requirements.txt
+```
+
+Initialize the sqlite database. Call init_db() from the python interpreter:
 
 ```python
 from reco import init_db
