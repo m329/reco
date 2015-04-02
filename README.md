@@ -14,7 +14,7 @@ source venv/bin/activate
 Install the requirements (you may need to install pip first):
 
 ```bash
-pip install requirements.txt
+pip install -r ./requirements.txt
 ```
 
 Initialize the sqlite database. Call init_db() from the python interpreter:
