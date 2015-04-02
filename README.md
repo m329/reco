@@ -17,14 +17,16 @@ Install the requirements (you may need to install pip first):
 pip install -r ./requirements.txt
 ```
 
-Initialize the sqlite database. Call init_db() from the python interpreter:
+Initialize the sqlite database. Call `init_db()` from the python interpreter:
 
 ```python
 from reco import init_db
 init_db()
 ```
 
-For fetching album covers from Discogs you will need to sign up for a Discogs account and create a new application to get an API consumer key and consumer secret. Add your consumer key, consumer secret and user agent to config.py.
+For fetching album covers from Discogs you will need to sign up for a Discogs account and create a new application to get an API consumer key and consumer secret. Add your consumer key, consumer secret and user agent to `config.py`.
+
+Also add the MySQL database credentials to `config.py`.
 
 Start a local instance:
 
