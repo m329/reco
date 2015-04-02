@@ -11,7 +11,8 @@ version 0.02
 """
 
 import os, sys
-import json, sqlite3
+import json
+import sqlite3, MySQLdb
 from flask import Flask, render_template, g, request, flash, redirect, url_for
 from forms import FavoritesForm
 import requests
@@ -27,10 +28,19 @@ DB-related
 app.config.update(dict(
 	DATABASE=os.path.join(app.root_path, 'reco.db'),
 	DEBUG=config.DEBUG,
-	SECRET_KEY=config.SECRET_KEY
+	SECRET_KEY=config.SECRET_KEY,
+	MYSQL_HOST=config.MYSQL_HOST,
+	MYSQL_PORT=config.MYSQL_PORT,
+	MYSQL_DATABASE=config.MYSQL_DATABASE,
+	MYSQL_USER=config.MYSQL_USER,
+	MYSQL_PASSWORD=config.MYSQL_PASSWORD
 ))
 
 cache = {} # a place to store API responses so we can avoid asking the same question twice
+
+"""
+SQLite
+"""
 
 def connect_db():
 	""" connect to the specific database """
@@ -57,6 +67,27 @@ def close_db(error):
 	""" close the database connection """
 	if hasattr(g, 'sqlite_db'):
 		g.sqlite_db.close()
+
+"""
+MYSQL
+"""
+
+def mysql_connect_db():
+	""" connect to the specific database """
+	c = MySQLdb.connect(host=app.config['MYSQL_HOST'],port=app.config['MYSQL_PORT'],db=app.config['MYSQL_DATABASE'],user=app.config['MYSQL_USER'],passwd=app.config['MYSQL_PASSWORD'])
+	return c
+
+def mysql_get_db():
+	"""	open a new database connection if there is none yet for the current application context """
+	if not hasattr(g, 'mysql_db'):
+		g.mysql_db = mysql_connect_db()
+	return g.mysql_db
+
+@app.teardown_appcontext
+def mysql_close_db(error):
+	""" close the database connection """
+	if hasattr(g, 'mysql_db'):
+		g.mysql_db.close()
 
 """
 Helper functions
@@ -109,6 +140,19 @@ def get_album_cover_urls_for_artist(a,N=3):
 		print "Unexpected error:", sys.exc_info()[0]
 		return []
 
+def get_genres_list():
+	db = mysql_get_db()
+	
+	q="select distinct name from (select name from Genres where level=1 and name!='Unknown genre' limit 2000) as t;"
+		
+	cur = db.cursor()
+	
+	cur.execute(q)
+	
+	dbresults = [i[0] for i in cur.fetchall()]
+	
+	return dbresults
+
 """
 View functions
 """
@@ -117,6 +161,7 @@ View functions
 @app.route('/favorites', methods=['GET'])
 def askfavorites():
 	""" show the favorites entry form """
+	
 	form = FavoritesForm()
 	return render_template('favorites.html',form=form)
 
@@ -127,6 +172,11 @@ def artists():
 	cur = db.execute('select aid, display from a order by aid')
 	artists = cur.fetchall()
 	return render_template('artists.html',artists=artists)
+
+@app.route("/genres")	
+def genres():
+	""" list genres """
+	return render_template('genres.html',genres=get_genres_list())
 
 @app.route('/favorites', methods=['POST'])
 def postfavorites():

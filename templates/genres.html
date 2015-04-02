@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Genres{% endblock %}
+{% block extraheader %}{% endblock %}
+{% block body %}
+	<h1>We know about the following genres:</h1>
+	<div class="list-group">
+	{% for genre in genres %}
+		<a href="#" class="list-group-item">{{ genre|safe }}</a>
+	{% endfor %}
+	</div>
+{% endblock %}
