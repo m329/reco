@@ -8,7 +8,7 @@
 		<h3>{{ result.display|safe }}</h3>
 		
 		{% for album_cover in result.album_covers %}
-			<img src='{{ album_cover|safe }}'></img>
+			<img class="img-thumbnail" src='{{ album_cover|safe }}'></img>
 		{% endfor %}
 		
 	{% endfor %}

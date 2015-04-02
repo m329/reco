@@ -3,15 +3,23 @@
 {% block extraheader %}{% endblock %}
 {% block body %}
   <h1>Music recommendations</h1>
-  <p>What should you listen to next?</p>
-  <h2>Which artists do you like?</h2>
-    <form action="{{ url_for('postfavorites') }}" method="post" name="login">
-      {{ form.hidden_tag() }}
-      <p>
-          Artist 1:<br>{{ form.a1(size=80) }}<br>
-          Artist 2:<br>{{ form.a2(size=80) }}<br>          
-          Artist 3:<br>{{ form.a3(size=80) }}<br>                    
-      </p>
-      <p><button type="submit" class="btn btn-md btn-primary">Submit</button></p>
-  </form>
+  
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3>What should you listen to next?</h3>
+	</div>
+	<div class="panel-body">
+		<h4>Which artists do you like?</h4>
+		<form action="{{ url_for('postfavorites') }}" method="post" name="login">
+		{{ form.hidden_tag() }}
+		<p>
+		Artist 1:<br>{{ form.a1(size=40) }}<br>
+		Artist 2:<br>{{ form.a2(size=40) }}<br>          
+		Artist 3:<br>{{ form.a3(size=40) }}<br>                    
+		</p>
+		<p><button type="submit" class="btn btn-md btn-primary">Submit</button></p>
+		</form>
+	</div>
+</div>
+
 {% endblock %}

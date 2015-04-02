@@ -2,10 +2,10 @@
 {% block title %}Artists{% endblock %}
 {% block extraheader %}{% endblock %}
 {% block body %}
-  <h1>We know about the following artists:</h1>
-  <ul>
-   {% for artist in artists %}
-		<li>{{ artist.display|safe }}</li>
+	<h1>We know about the following artists:</h1>
+	<div class="list-group">
+	{% for artist in artists %}
+		<a href="#" class="list-group-item">{{ artist.display|safe }}</a>
 	{% endfor %}
-	</ul>
+	</div>
 {% endblock %}
