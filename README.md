@@ -20,7 +20,7 @@ pip install -r ./requirements.txt
 Initialize the sqlite database. Call `init_db()` from the python interpreter:
 
 ```python
-from reco import init_db
+from application import init_db
 init_db()
 ```
 
@@ -31,5 +31,5 @@ Also add the MySQL database credentials to `config.py`.
 Start a local instance:
 
 ```bash
-python reco.py
+python application.py
 ```
