@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Recommended artists for {{artist_name}}{% endblock %}
+{% block extraheader %}{% endblock %}
+{% block body %}
+	<h1>Recommended artists for {{artist_name}}:</h1>
+	<div class="list-group">
+	{% for n in names %}
+		<a href="#" class="list-group-item">{{ n|safe }}</a>
+	{% endfor %}
+	</div>
+{% endblock %}

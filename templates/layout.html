@@ -12,6 +12,8 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-slider.css') }}">
+
 
 <style>
   body {
@@ -40,6 +42,7 @@
 				<li {% if request.path == "/" %}class="active"{% endif %}><a href="/"><span class="glyphicon glyphicon-home" aria-hidden="true"> Home</a></li>
 				<li {% if request.path == "/artists" %}class="active"{% endif %}><a href="/artists"> Artists</a></li>
 				<li {% if request.path == "/genres" %}class="active"{% endif %}><a href="/genres"> Genres</a></li>
+				<li {% if request.path == "/gvision" %}class="active"{% endif %}><a href="/gvision"> Genre Vision</a></li>
 			</ul>
 		</div><!--/.nav-collapse -->
 	</div>
@@ -53,5 +56,8 @@
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+{% block afterboxy %}{% endblock %}
+
 </body>
 </html>

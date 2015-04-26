@@ -6,7 +6,7 @@ Reco
 A simple proof-of-concept for doing artist/band recommendations using
 only user-submitted information.
 
-version 0.02
+version 0.03
 
 """
 
@@ -17,12 +17,18 @@ from flask import Flask, render_template, g, request, flash, redirect, url_for
 from forms import FavoritesForm
 import requests
 import config
+import numpy as np
+from recommender import ArtistRecommender
+import json
+import itertools
 
 app = Flask(__name__)
 
 """
 DB-related
 """
+
+sys.setrecursionlimit(10000)
 
 # Load/override default config
 app.config.update(dict(
@@ -153,6 +159,37 @@ def get_genres_list():
 	
 	return dbresults
 
+def artist_name_lookup(id):
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select artistName from Artists where artistId='"+id+"' limit 1;")
+	name = cur.fetchone()
+	return name[0]
+
+def artist_name_popularity_lookup(id):
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select artistName, artistPopularityAll from Artists where artistId='"+id+"' limit 1;")
+	data = cur.fetchone()
+	return data
+
+def artist_id_lookup(name):
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select artistId from Artists where lower(artistName) like lower('"+name+"') limit 1;")
+	name = cur.fetchone()
+	return str(name[0])
+
+"""
+KDTree / SVD stuff
+"""
+
+def get_recommender():
+	"""	open a new database connection if there is none yet for the current application context """
+	if not hasattr(g, 'recommender'):
+		g.recommender = ArtistRecommender()
+	return g.recommender
+
 """
 View functions
 """
@@ -161,9 +198,37 @@ View functions
 @app.route('/favorites', methods=['GET'])
 def askfavorites():
 	""" show the favorites entry form """
-	
 	form = FavoritesForm()
 	return render_template('favorites.html',form=form)
+
+@app.route('/recommend/<artist_name>')
+def recommend(artist_name):
+	artist_id=artist_id_lookup(artist_name)
+	[dist,ids,points]=get_recommender().recommend(artist_id,k=10)
+	names = [artist_name_lookup(i) for i in ids]
+	return render_template('recommend.html',artist_name=artist_name_lookup(artist_id),names=names,dist=dist)
+
+@app.route('/json/recommend/<artist_id>')
+def recommend_json(artist_id):
+	[dist,ids,points]=get_recommender().recommend(artist_id,k=10)
+	names = [artist_name_lookup(i) for i in ids]
+	points=points[:,:2]
+	
+	data = [ (p[0],p[1],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
+	
+	return json.dumps(data)
+	
+@app.route('/json/recommend/searchnear',methods=['POST'])
+def recommend_searchnear_json():
+	xs = [float(request.form[x]) for x in ['x0','x1','x2','x3','x4']]
+	xs = get_recommender().maptobounds(xs)
+	[dist,ids,points]=get_recommender().searchnear(xs,k=12)
+	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	points=points[:,:2]
+	
+	data = [ (p[0],p[1],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
+	
+	return json.dumps(data)	
 
 @app.route("/artists")	
 def artists():
@@ -177,6 +242,11 @@ def artists():
 def genres():
 	""" list genres """
 	return render_template('genres.html',genres=get_genres_list())
+	
+@app.route("/gvision")
+def genrevision():
+	""" genrevision """
+	return render_template('genre_vision.html')
 
 @app.route('/favorites', methods=['POST'])
 def postfavorites():
