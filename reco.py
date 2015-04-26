@@ -224,7 +224,10 @@ def recommend_searchnear_json():
 	xs = get_recommender().maptobounds(xs)
 	[dist,ids,points]=get_recommender().searchnear(xs,k=12)
 	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	
 	points=points[:,:2]
+	
+	dist = (dist/np.max(dist)) # return relative normalize distance (scale of 0-1)
 	
 	data = [ (p[0],p[1],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
 	
@@ -244,9 +247,19 @@ def genres():
 	return render_template('genres.html',genres=get_genres_list())
 	
 @app.route("/gvision")
-def genrevision():
+@app.route("/gvision/<by>/<x>")
+def genrevision(by=None,x=None):
 	""" genrevision """
-	return render_template('genre_vision.html')
+	if by=='id':
+		searchpoint = get_recommender().getlocationof(x)
+	elif by=='name':
+		searchpoint = get_recommender().getlocationof(artist_id_lookup(x))
+	else:
+		searchpoint = get_recommender().getlocationof(artist_id_lookup('Rihanna'))
+	
+	searchpoint = get_recommender().unmaptobounds(searchpoint)
+	
+	return render_template('genre_vision.html',initial_point=searchpoint)
 
 @app.route('/favorites', methods=['POST'])
 def postfavorites():

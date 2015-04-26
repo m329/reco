@@ -11,9 +11,24 @@ class ArtistRecommender(object):
 		self.K = cKDTree(self.U)
 		self.artist_list = np.load('./all_otherdata_list.npz')['arr_0']
 
+	def getlocationof(self,artistId):
+		inx = self.artist_list.tolist().index(artistId)
+		searchpoint = self.U[ int(inx) ,: ]
+		return searchpoint
+
 	def maptobounds(self,x):
-		# assume x is in space from 0 to 1
+		"""
+			assume x is in space from 0 to 1 and map this to the bounds
+			of points in U
+		"""
 		return self.Umin+x*(self.Umax-self.Umin)
+
+	def unmaptobounds(self,x):
+		"""
+			assume x is in the U space and map this to a space where points
+			lie in [0,1] in every dimension
+		"""
+		return (x-self.Umin)/(self.Umax-self.Umin)
 
 	def searchnear(self,searchpoint,k=5):
 

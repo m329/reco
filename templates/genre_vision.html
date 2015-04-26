@@ -58,6 +58,22 @@
 				$('#sliders').append("<li>"+labels[s]+": <input id='#sv"+s+"' class='sliderin' data-slider-id='svSlider' type='text' data-slider-min='0' data-slider-max='1' data-slider-step='0.0001' data-slider-value='0'/></li>");
 		}
 
+		function setSlidersTo(point){
+			for (s = 0; s < point.length; s++) {
+				slider_vals[s].setValue(point[s]);
+			}
+				
+		}
+
+		function areaToRadiusMap(area){
+			return (Math.sqrt((0.15+(1-area)) *800/Math.PI)) ;
+		}
+		
+		function areaToFontSizeMap(area){
+			s=Math.round( (Math.sqrt((0.1+(1-area)) *4000/Math.PI))) +'px'
+			return s ;
+		}
+
 		function UpdateView(event){
 									
 			Pace.track($.ajax({
@@ -109,7 +125,11 @@
 			   .attr("cy", function(d) {
 					return d[1];
 			   })
-			   .attr("r", 5);
+			   .attr("r", function(d){
+					//return (Math.sqrt((9*d[3]+1) *4/Math.PI));
+					return areaToRadiusMap(d[3]) ;
+				})
+				.attr("fill", "#4a90d9");
 				
 			svg.selectAll("text")
 			   .data(data)
@@ -119,14 +139,14 @@
 			   		return d[2];
 			   })
 			   .attr("x", function(d) {
-			   		return d[0];
+			   		return d[0]+areaToRadiusMap(d[3])+5;
 			   })
 			   .attr("y", function(d) {
 			   		return d[1];
 			   })
 			   .attr("font-family", "sans-serif")
-			   .attr("font-size", "22px")
-			   .attr("fill", "blue");
+			   .style("font-size",function(d) { return areaToFontSizeMap(d[3])})
+			   .attr("fill", "#072544");
 			  
 			},
 			complete: function() {}
@@ -152,6 +172,8 @@
 			.append("svg")
 			.attr("width", w)
 			.attr("height", h);
+
+		setSlidersTo([{{ initial_point|join(', ') }}])
 
 		UpdateView();
 
