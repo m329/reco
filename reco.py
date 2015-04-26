@@ -180,6 +180,23 @@ def artist_id_lookup(name):
 	name = cur.fetchone()
 	return str(name[0])
 
+def artist_id_lookup_soundslike(name):
+	
+	print 'name'+name
+	
+	#q="set @a=concat('%',splitname('"+name+"'),'%');select artistId from Artists where soundName like @a order by artistPopularityAll desc limit 1;"
+
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select concat('%',splitname('"+name+"'),'%') limit 1;")
+	soundex = cur.fetchone()[0]
+	
+	cur = db.cursor()
+	cur.execute("select artistId from Artists where soundName like '"+soundex+"' order by artistPopularityAll desc limit 1;")
+	artist_id = cur.fetchone()
+	
+	return str(artist_id[0])
+
 """
 KDTree / SVD stuff
 """
@@ -208,13 +225,25 @@ def recommend(artist_name):
 	names = [artist_name_lookup(i) for i in ids]
 	return render_template('recommend.html',artist_name=artist_name_lookup(artist_id),names=names,dist=dist)
 
-@app.route('/json/recommend/<artist_id>')
-def recommend_json(artist_id):
-	[dist,ids,points]=get_recommender().recommend(artist_id,k=10)
-	names = [artist_name_lookup(i) for i in ids]
-	points=points[:,:2]
+@app.route('/json/location/id',methods=['POST'])
+def get_location_from_id_json():
+	artist_id = request.form['aid']
 	
-	data = [ (p[0],p[1],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
+	x=get_recommender().getlocationof(artist_id)
+	
+	return json.dumps(x.tolist())
+
+@app.route('/json/recommend/id',methods=['POST'])
+def recommend_json():
+	artist_id = request.form['aid']
+	print artist_id
+	
+	[dist,ids,points]=get_recommender().recommend(artist_id,k=10)
+	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	
+	dist = (dist/np.max(dist)) # return relative normalize distance (scale of 0-1)
+	
+	data = [ (p[0],p[1],p[2],p[3],p[4],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
 	
 	return json.dumps(data)
 	
@@ -230,6 +259,21 @@ def recommend_searchnear_json():
 	data = [ (p[0],p[1],p[2],p[3],p[4],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
 	
 	return json.dumps(data)	
+
+@app.route('/json/artistid/soundslike',methods=['POST'])
+def search_artist_id_lookup_soundslike():
+	
+	print 'search_term'+request.form['search_term']
+	
+	search = request.form['search_term']
+	
+	artistId = artist_id_lookup_soundslike(search)
+	
+	print artistId
+	
+	return json.dumps([artistId])
+	
+	
 
 @app.route("/artists")	
 def artists():

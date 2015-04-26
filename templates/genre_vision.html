@@ -12,9 +12,20 @@
 {% block body %}
 	<h1>GenreVision</h1>
 	
-	<div id="chart"></div>
+
+    <div id="chart"></div>
+  
+	<div class="panel panel-default">
+	<div class="panel-body">
+		<ul id="sliders"></ul>
+		
+		<div class="input-group">
+		  <input id="searchbox" type="text" class="form-control" placeholder="Artist name" aria-describedby="basic-addon1">
+		</div>
 	
-	<ul id="sliders"></ul>
+	</div>
+	</div>
+
 {% endblock %}
 
 {% block afterboxy %}
@@ -44,37 +55,30 @@
 	
 	var slider_vals = [];
 	
-	$(document).ready(function() {
-		
-		var labels = [
-			'Dimension 1',
-			'Dimension 2',
-			'Dimension 3',
-			'Dimension 4',
-			'Dimension 5'
-		];
-		
-		for (s=0; s < 5; s++) {
-				$('#sliders').append("<li>"+labels[s]+": <input id='#sv"+s+"' class='sliderin' data-slider-id='svSlider' type='text' data-slider-min='0' data-slider-max='1' data-slider-step='0.0001' data-slider-value='0'/></li>");
-		}
+	//Create SVG element
+	var svg = d3.select("#chart")
+		.append("svg")
+		.attr("width", w)
+		.attr("height", h);
 
-		function setSlidersTo(point){
+	
+	function setSlidersTo(point){
 			for (s = 0; s < point.length; s++) {
 				slider_vals[s].setValue(point[s]);
 			}
 				
-		}
-
-		function areaToRadiusMap(area){
-			return (Math.sqrt((0.15+(1-area)) *800/Math.PI)) ;
-		}
+	}
+	
+	function areaToRadiusMap(area){
+		return (Math.sqrt((0.15+(1-area)) *800/Math.PI)) ;
+	}
 		
-		function areaToFontSizeMap(area){
-			s=Math.round( (Math.sqrt((0.1+(1-area)) *4000/Math.PI))) +'px'
-			return s ;
-		}
-
-		function UpdateView(event){
+	function areaToFontSizeMap(area){
+		s=Math.round( (Math.sqrt((0.1+(1-area)) *4000/Math.PI))) +'px'
+		return s ;
+	}
+	
+	function UpdateView(event){
 									
 			Pace.track($.ajax({
 			url: '{{ url_for('recommend_searchnear_json',_external=True) }}', 
@@ -165,10 +169,65 @@
 			  
 			},
 			complete: function() {}
-		  }));		
+		  })
+		  );
+	  }		
 
+
+	$( "#searchbox" ).keyup(debounce(function( event ) {
 			
+			$.ajax({
+				url: '{{ url_for('search_artist_id_lookup_soundslike',_external=True) }}', 
+				method: "POST",
+				data: {search_term: $('#searchbox').val()},
+				success: function(data) {
+					
+						var artist_id=$.parseJSON( data );
+					
+					
+								$.ajax({
+										url: '{{ url_for('get_location_from_id_json',_external=True) }}', 
+									method: "POST",
+									data: {aid: (artist_id[0]).toString()},
+									success: function(data) {
+											var searchpoint = $.parseJSON(data)
+											
+											console.log(searchpoint);
+											setSlidersTo(searchpoint);
+											
+											UpdateView();
+											
+										}
+									});
+					
+					
+				}
+			});
+	},500));
+	
+	
+	
+	
+	
+	
+	
+	$(document).ready(function() {
+		
+		var labels = [
+			'Dimension 1',
+			'Dimension 2',
+			'Dimension 3',
+			'Dimension 4',
+			'Dimension 5'
+		];
+		
+		for (s=0; s < 5; s++) {
+				$('#sliders').append("<li>"+labels[s]+": <input id='#sv"+s+"' class='sliderin' data-slider-id='svSlider' type='text' data-slider-min='0' data-slider-max='1' data-slider-step='0.0001' data-slider-value='0'/></li>");
 		}
+
+
+
+
 			
 		$('.sliderin').each(function(s){	
 			$(this).slider({
@@ -182,15 +241,13 @@
 		});
 
 
-		//Create SVG element
-		var svg = d3.select("#chart")
-			.append("svg")
-			.attr("width", w)
-			.attr("height", h);
 
 		setSlidersTo([{{ initial_point|join(', ') }}])
 
 		UpdateView();
+		
+
+ 
 
 	});
 </script>
