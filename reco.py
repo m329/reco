@@ -221,15 +221,13 @@ def recommend_json(artist_id):
 @app.route('/json/recommend/searchnear',methods=['POST'])
 def recommend_searchnear_json():
 	xs = [float(request.form[x]) for x in ['x0','x1','x2','x3','x4']]
-	xs = get_recommender().maptobounds(xs)
+
 	[dist,ids,points]=get_recommender().searchnear(xs,k=12)
 	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
 	
-	points=points[:,:2]
-	
 	dist = (dist/np.max(dist)) # return relative normalize distance (scale of 0-1)
 	
-	data = [ (p[0],p[1],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
+	data = [ (p[0],p[1],p[2],p[3],p[4],n,d,i) for p,n,d,i in itertools.izip(points.tolist(),names,dist.tolist(),ids.tolist())]
 	
 	return json.dumps(data)	
 
@@ -256,8 +254,6 @@ def genrevision(by=None,x=None):
 		searchpoint = get_recommender().getlocationof(artist_id_lookup(x))
 	else:
 		searchpoint = get_recommender().getlocationof(artist_id_lookup('Rihanna'))
-	
-	searchpoint = get_recommender().unmaptobounds(searchpoint)
 	
 	return render_template('genre_vision.html',initial_point=searchpoint)
 

@@ -90,12 +90,19 @@
 			var wpadding=0.20;
 			var hpadding=0.20;
 			
-			var x=xmin=xmax=data[0][0];
-			var y=ymin=ymax=data[0][1];
+			
+			for (i = 0; i < data.length; i++) {
+					data[i][8]=data[i][0];
+					data[i][9]=data[i][1];
+			}
+			
+			var x=xmin=xmax=data[0][8];
+			var y=ymin=ymax=data[0][9];
+
 
 			for (i = 1; i < data.length; i++) {
-				x=data[i][0];
-				y=data[i][1];
+				x=data[i][8];
+				y=data[i][9];
 				
 				if(x<xmin) xmin=x;
 				if(x>xmax) xmax=x;
@@ -106,8 +113,8 @@
 
 			
 			for (i = 0; i < data.length; i++) {
-				data[i][0]=w*wpadding+(data[i][0]-xmin)*w*(1-2*wpadding)/(xmax-xmin);
-				data[i][1]=h*hpadding+(data[i][1]-ymin)*h*(1-2*hpadding)/(ymax-ymin);
+				data[i][8]=w*wpadding+(data[i][8]-xmin)*w*(1-2*wpadding)/(xmax-xmin);
+				data[i][9]=h*hpadding+(data[i][9]-ymin)*h*(1-2*hpadding)/(ymax-ymin);
 			}
 			  
 			svg.remove();
@@ -120,33 +127,41 @@
 				.enter()
 				.append("circle")
 			   .attr("cx", function(d) {
-					return d[0];
+					return d[8];
 			   })
 			   .attr("cy", function(d) {
-					return d[1];
+					return d[9];
 			   })
 			   .attr("r", function(d){
-					//return (Math.sqrt((9*d[3]+1) *4/Math.PI));
-					return areaToRadiusMap(d[3]) ;
+					//return (Math.sqrt((9*d[6]+1) *4/Math.PI));
+					return areaToRadiusMap(d[6]) ;
 				})
-				.attr("fill", "#4a90d9");
+				.attr("fill", "#4a90d9")
+				.on("click",function(d) { 
+				   setSlidersTo([d[0],d[1],d[2],d[3],d[4]]);
+				   UpdateView();
+				  });
 				
 			svg.selectAll("text")
 			   .data(data)
 			   .enter()
 			   .append("text")
 			   .text(function(d) {
-			   		return d[2];
+			   		return d[5];
 			   })
 			   .attr("x", function(d) {
-			   		return d[0]+areaToRadiusMap(d[3])+5;
+			   		return d[8]+areaToRadiusMap(d[6])+5;
 			   })
 			   .attr("y", function(d) {
-			   		return d[1];
+			   		return d[9];
 			   })
 			   .attr("font-family", "sans-serif")
-			   .style("font-size",function(d) { return areaToFontSizeMap(d[3])})
-			   .attr("fill", "#072544");
+			   .style("font-size",function(d) { return areaToFontSizeMap(d[6])})
+			   .attr("fill", "#072544")
+			   .on("click",function(d) { 
+				   setSlidersTo([d[0],d[1],d[2],d[3],d[4]]);
+				   UpdateView();
+				  });
 			  
 			},
 			complete: function() {}
