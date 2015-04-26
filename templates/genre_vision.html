@@ -60,7 +60,7 @@
 
 		function UpdateView(event){
 									
-			$.ajax({
+			Pace.track($.ajax({
 			url: '{{ url_for('recommend_searchnear_json',_external=True) }}', 
 			method: "POST",
 			data: { x0 : slider_vals[0].getValue(),x1 : slider_vals[1].getValue(), x2 : slider_vals[2].getValue(),x3 : slider_vals[3].getValue(),x4 : slider_vals[4].getValue(),},
@@ -130,7 +130,7 @@
 			  
 			},
 			complete: function() {}
-		  });		
+		  }));		
 
 			
 		}
@@ -142,7 +142,7 @@
 				}
 			});	
 			
-			slider_vals.push($(this).slider().on('slide',debounce(UpdateView,1000)).data('slider'));
+			slider_vals.push($(this).slider().on('slide',debounce(UpdateView,100)).data('slider'));
 		
 		});
 

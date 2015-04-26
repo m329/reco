@@ -7,6 +7,8 @@
 	
 <title>Music recommendations - {% block title %}{% endblock %}</title>
 
+<script type="text/javascript" src="{{ url_for('static', filename='js/pace.min.js') }}"></script>
+
 <!-- Twitter Bootstrap -->
 <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
 
@@ -19,6 +21,30 @@
   body {
 	padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
   }
+</style>
+<style>
+.pace {
+  -webkit-pointer-events: none;
+  pointer-events: none;
+
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.pace-inactive {
+  display: none;
+}
+
+.pace .pace-progress {
+  background: #29d;
+  position: fixed;
+  z-index: 2000;
+  top: 0;
+  right: 100%;
+  width: 100%;
+  height: 4px;
+}
 </style>
 {% block extraheader %}{% endblock %}
 </head>
@@ -56,6 +82,7 @@
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
 
 {% block afterboxy %}{% endblock %}
 
