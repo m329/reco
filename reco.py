@@ -182,10 +182,6 @@ def artist_id_lookup(name):
 
 def artist_id_lookup_soundslike(name):
 	
-	print 'name'+name
-	
-	#q="set @a=concat('%',splitname('"+name+"'),'%');select artistId from Artists where soundName like @a order by artistPopularityAll desc limit 1;"
-
 	db = mysql_get_db()
 	cur = db.cursor()
 	cur.execute("select concat('%',splitname('"+name+"'),'%') limit 1;")
@@ -196,6 +192,38 @@ def artist_id_lookup_soundslike(name):
 	artist_id = cur.fetchone()
 	
 	return str(artist_id[0])
+
+def lookup_songs_of_artist(id):
+
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select youtubeId,songName,url from Songs where artistId='"+id+"' order by viewCount desc limit 10;")
+	songs = cur.fetchall()
+	
+	return songs
+
+def get_trending_status(id):
+	
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select artistPopularityRecent,artistPopularityAll from Artists where artistId='"+id+"' limit 1;")
+	[recent,theall] = cur.fetchone()
+
+	mu = get_ratio_of_mean_popularity_ratio()
+
+	return int(recent - (theall*mu))
+	
+def get_ratio_of_mean_popularity_ratio():
+	"""	open a new database connection if there is none yet for the current application context """
+	if not hasattr(g, 'ratio_of_mean_popularity_ratio'):
+		
+		db = mysql_get_db()
+		cur = db.cursor()
+		cur.execute("select avg(artistPopularityRecent)/avg(artistPopularityAll) from Artists limit 1;")
+		mu = cur.fetchone()[0]
+		
+		g.ratio_of_mean_popularity_ratio = mu
+	return g.ratio_of_mean_popularity_ratio
 
 """
 KDTree / SVD stuff
@@ -263,13 +291,9 @@ def recommend_searchnear_json():
 @app.route('/json/artistid/soundslike',methods=['POST'])
 def search_artist_id_lookup_soundslike():
 	
-	print 'search_term'+request.form['search_term']
-	
 	search = request.form['search_term']
 	
 	artistId = artist_id_lookup_soundslike(search)
-	
-	print artistId
 	
 	return json.dumps([artistId])
 	
@@ -282,6 +306,49 @@ def artists():
 	cur = db.execute('select aid, display from a order by aid')
 	artists = cur.fetchall()
 	return render_template('artists.html',artists=artists)
+
+@app.route("/artist/<id>")
+def artist_page(id):
+	""" artist page """
+	artist_name = artist_name_lookup(id)
+	
+	# find similar artists
+	[dist,ids,points] = get_recommender().recommend(id,k=5)
+	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	
+	order=np.argsort(dist)
+	names = np.array(names)[order].tolist()
+	ids = np.array(ids)[order].tolist()
+	
+	trending_status = np.round(get_trending_status(id))
+	
+	"""
+	album_covers = []
+	for n in names:
+		u=get_album_cover_urls_for_artist(n,N=1)
+		album_covers.append(u)
+	
+	similar_artists = [ {'name':n,'id':i,'thumb':a} for n,i,a in itertools.izip(names,ids,album_covers)]
+	
+	# 					<!--<img class="img-thumbnail" src='{{simartist.thumb}}'></img>
+	"""
+
+	album_covers = []
+	for n in names:
+		u=get_album_cover_urls_for_artist(n,N=1)
+		album_covers.append(u)
+	
+	similar_artists = [ {'name':n,'id':i} for n,i in itertools.izip(names,ids)]
+	
+	# find songs
+	songdata = []
+	for song in lookup_songs_of_artist(id):
+		print song
+		song = [unicode(s, errors='replace') for s in song]
+		
+		songdata.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
+	
+	return render_template('artist_page.html',artist_id=id,artist_name=artist_name,similar_artists=similar_artists,songdata=songdata,album_cover=get_album_cover_urls_for_artist(artist_name,N=1)[0],trending_status=trending_status)
 
 @app.route("/genres")	
 def genres():
