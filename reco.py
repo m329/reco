@@ -243,8 +243,6 @@ View functions
 def index():
 	return render_template('index.html')
 	
-	
-	
 @app.route('/favorites', methods=['GET'])
 def askfavorites():
 	""" show the favorites entry form """
@@ -312,9 +310,14 @@ def artists():
 	artists = cur.fetchall()
 	return render_template('artists.html',artists=artists)
 
+@app.route("/artist")
 @app.route("/artist/<id>")
-def artist_page(id):
+def artist_page(id=None):
 	""" artist page """
+	
+	if id is None:
+		id = artist_id_lookup('Rihanna')
+	
 	artist_name = artist_name_lookup(id)
 	
 	# find similar artists
