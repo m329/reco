@@ -240,6 +240,11 @@ View functions
 """
 
 @app.route("/")
+def index():
+	return render_template('index.html')
+	
+	
+	
 @app.route('/favorites', methods=['GET'])
 def askfavorites():
 	""" show the favorites entry form """
