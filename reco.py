@@ -80,7 +80,7 @@ MYSQL
 
 def mysql_connect_db():
 	""" connect to the specific database """
-	c = MySQLdb.connect(host=app.config['MYSQL_HOST'],port=app.config['MYSQL_PORT'],db=app.config['MYSQL_DATABASE'],user=app.config['MYSQL_USER'],passwd=app.config['MYSQL_PASSWORD'])
+	c = MySQLdb.connect(host=app.config['MYSQL_HOST'],port=app.config['MYSQL_PORT'],db=app.config['MYSQL_DATABASE'],user=app.config['MYSQL_USER'],passwd=app.config['MYSQL_PASSWORD'],use_unicode=True,charset='utf8', init_command='SET NAMES UTF8')
 	return c
 
 def mysql_get_db():
@@ -269,7 +269,7 @@ def recommend_json():
 	artist_id = request.form['aid']
 	print artist_id
 	
-	[dist,ids,points]=get_recommender().recommend(artist_id,k=10)
+	[dist,ids,points]=get_recommender().recommend(artist_id,k=20)
 	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
 	
 	dist = (dist/np.max(dist)) # return relative normalize distance (scale of 0-1)
@@ -282,8 +282,9 @@ def recommend_json():
 def recommend_searchnear_json():
 	xs = [float(request.form[x]) for x in ['x0','x1','x2','x3','x4']]
 
-	[dist,ids,points]=get_recommender().searchnear(xs,k=12)
-	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	[dist,ids,points]=get_recommender().searchnear(xs,k=20)
+
+	names = [artist_name_lookup(i) for i in ids]
 	
 	dist = (dist/np.max(dist)) # return relative normalize distance (scale of 0-1)
 	
@@ -322,7 +323,7 @@ def artist_page(id=None):
 	
 	# find similar artists
 	[dist,ids,points] = get_recommender().recommend(id,k=5)
-	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	names = [artist_name_lookup(i) for i in ids]
 	
 	order=np.argsort(dist)
 	names = np.array(names)[order].tolist()
@@ -351,9 +352,6 @@ def artist_page(id=None):
 	# find songs
 	songdata = []
 	for song in lookup_songs_of_artist(id):
-		print song
-		song = [unicode(s, errors='replace') for s in song]
-		
 		songdata.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
 	
 	return render_template('artist_page.html',artist_id=id,artist_name=artist_name,similar_artists=similar_artists,songdata=songdata,album_cover=get_album_cover_urls_for_artist(artist_name,N=1)[0],trending_status=trending_status)
@@ -374,7 +372,7 @@ def genrevision(by=None,x=None):
 	else:
 		searchpoint = get_recommender().getlocationof(artist_id_lookup('Rihanna'))
 	
-	return render_template('genre_vision.html',initial_point=searchpoint)
+	return render_template('genre_vision.html',initial_point=searchpoint,dimlabels=config.dimlabels)
 
 @app.route('/favorites', methods=['POST'])
 def postfavorites():

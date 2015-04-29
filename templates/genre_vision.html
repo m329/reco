@@ -7,20 +7,28 @@
 	background: #BABABA;
 }
 
+div.minside{
+		text-align: right;
+}
+div.maxside{
+		text-align: left;
+}
+
 </style>
 {% endblock %}
 {% block body %}
 	<h1>GenreVision</h1>
-	
+
 
     <div id="chart"></div>
   
 	<div class="panel panel-default">
 	<div class="panel-body">
-		<ul id="sliders"></ul>
 		
+		<div id="sliders"></div>
+			
 		<div class="input-group">
-		  <input id="searchbox" type="text" class="form-control" placeholder="Artist name" aria-describedby="basic-addon1">
+		  <span class="glyphicon glyphicon-search" aria-hidden="true">Search <input id="searchbox" type="text" class="form-control" placeholder="Artist name" aria-describedby="basic-addon1">
 		</div>
 	
 	</div>
@@ -32,6 +40,7 @@
 
 <script type='text/javascript' src="{{ url_for('static', filename='js/d3.min.js') }}"></script>
 <script type='text/javascript' src="{{ url_for('static', filename='js/bootstrap-slider.min.js') }}"></script>
+<script type='text/javascript' src="{{ url_for('static', filename='js/labeler.js') }}"></script>
 
 <script type='text/javascript'>
 	
@@ -47,11 +56,11 @@
 	}
 	
 	// width and height of canvas
-	var w = 1000;
+	var w = 1200;
 	var h = 400;
 	
-	var wpadding=0.20;
-	var hpadding=0.20;
+	var wpadding=0.2;
+	var hpadding=0.2;
 	
 	var slider_vals = [];
 	
@@ -77,7 +86,7 @@
 		s=Math.round( (Math.sqrt((0.1+(1-area)) *4000/Math.PI))) +'px'
 		return s ;
 	}
-	
+		
 	function UpdateView(event){
 									
 			Pace.track($.ajax({
@@ -87,13 +96,16 @@
 			success: function(data) {
 			  
 			var data = $.parseJSON( data );
+			
+			var label_array = [];
+			var anchor_array = [];
 			  			
-			var w = 1000;
+			/*var w = 1200;
 			var h = 400;
 			
-			var wpadding=0.20;
-			var hpadding=0.20;
-			
+			var wpadding=0.25;
+			var hpadding=0.25;
+			*/
 			
 			for (i = 0; i < data.length; i++) {
 					data[i][8]=data[i][0];
@@ -119,6 +131,10 @@
 			for (i = 0; i < data.length; i++) {
 				data[i][8]=w*wpadding+(data[i][8]-xmin)*w*(1-2*wpadding)/(xmax-xmin);
 				data[i][9]=h*hpadding+(data[i][9]-ymin)*h*(1-2*hpadding)/(ymax-ymin);
+			}
+			
+			for (i = 0; i< data.length; i++){
+				label_array[i]={data: data[i], x: data[i][8], y: data[i][9], name: data[i][5], dist: data[i][6], width: 10.0, height: 1.0, d0:data[i][0], d1:data[i][1], d2:data[i][2], d3:data[i][3], d4:data[i][4]};	
 			}
 			  
 			svg.remove();
@@ -146,28 +162,54 @@
 				   UpdateView();
 				  });
 				
-			svg.selectAll("text")
-			   .data(data)
+			labels = svg.selectAll("text")
+			   .data(label_array)
 			   .enter()
 			   .append("text")
 			   .text(function(d) {
-			   		return d[5];
+			   		return d.name;
 			   })
 			   .attr("x", function(d) {
-			   		return d[8]+areaToRadiusMap(d[6])+5;
+			   		return d.x+areaToRadiusMap(d.dist)+5;
 			   })
 			   .attr("y", function(d) {
-			   		return d[9];
+			   		return d.y;
 			   })
 			   .attr("font-family", "sans-serif")
-			   .style("font-size",function(d) { return areaToFontSizeMap(d[6])})
+			   .style("font-size",function(d) { return areaToFontSizeMap(d.dist)})
 			   .attr("fill", "#072544")
 			   .on("click",function(d) { 
-				   setSlidersTo([d[0],d[1],d[2],d[3],d[4]]);
+				   setSlidersTo([d.d0,d.d1,d.d2,d.d3,d.d4]);
 				   UpdateView();
 				  });
-			  
+		
+			var index = 0;
+			
+			labels.each(function(){
+				label_array[index].width = this.getBBox().width;
+				label_array[index].height = this.getBBox().height;
+				console.log(label_array[index]);
+				
+				index +=1;
+				});
+			
+			for (i = 0; i < data.length; i++) {
+				anchor_array.push({x:data[i][8],y:data[i][9],r:7});
+			}
+							
+			var thelabeler = d3.labeler()
+			.label(label_array)
+			.anchor(anchor_array)
+			.width(w)
+			.height(h)
+			.start(1000);
+
+			 labels.transition()
+				.duration(0)
+				.attr("x", function(d) { return (d.x); })
+				.attr("y", function(d) { return (d.y); });
 			},
+			
 			complete: function() {}
 		  })
 		  );
@@ -214,15 +256,11 @@
 	$(document).ready(function() {
 		
 		var labels = [
-			'Dimension 1',
-			'Dimension 2',
-			'Dimension 3',
-			'Dimension 4',
-			'Dimension 5'
+			{% for dim in dimlabels %}['{{dim[0]}}','{{dim[1]}}'],{% endfor %}
 		];
 		
 		for (s=0; s < 5; s++) {
-				$('#sliders').append("<li>"+labels[s]+": <input id='#sv"+s+"' class='sliderin' data-slider-id='svSlider' type='text' data-slider-min='0' data-slider-max='1' data-slider-step='0.0001' data-slider-value='0'/></li>");
+				$('#sliders').append("<div class=\"row\"><div class=\"col-md-2 minside\">"+labels[s][0]+"</div><div class=\"col-md-3\"><input id='#sv"+s+"' class='sliderin' data-slider-id='svSlider' type='text' data-slider-min='0' data-slider-max='1' data-slider-step='0.0001' data-slider-value='0'/></div><div class=\"col-md-2 maxside\">"+labels[s][1]+"</div></div>");
 		}
 
 

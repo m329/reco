@@ -1,11 +1,12 @@
 from scipy.spatial import cKDTree
 import numpy as np
+import config
 
 class ArtistRecommender(object):
 
 	def __init__(self):
 
-		self.U = np.load('./all_U.npz')['arr_0']
+		self.U = np.load(config.U_path)['arr_0']
 		
 		# transform dimensions of U to be from 0 to 1
 		
@@ -23,14 +24,31 @@ class ArtistRecommender(object):
 		self.Urange = self.Umax - self.Umin
 				
 		self.K = cKDTree(self.U)
-		self.artist_list = np.load('./all_otherdata_list.npz')['arr_0']
+		self.artist_list = np.load(config.otherdata_path)['arr_0']
+
+	def mapped(self,x,xmin=0,xmax=1):
+		"""
+			values come in as [0,1], map to U-space
+		"""
+		return self.Umin+x*self.Urange/(xmax-xmin)
+
+	def unmapped(self,u,xmin=0,xmax=1):
+		"""
+			value is in U-space, map to [0,1]
+		"""
+		return xmin+u*(xmax-xmin)/self.Urange
 
 	def getlocationof(self,artistId):
 		inx = self.artist_list.tolist().index(artistId)
 		searchpoint = self.U[ int(inx) ,: ]
+		
+		searchpoint = self.unmapped(searchpoint)
+		
 		return searchpoint
 
 	def searchnear(self,searchpoint,k=5):
+
+		searchpoint = self.mapped(searchpoint)
 
 		[dist,inxes] = self.K.query(searchpoint,k=k)
 
@@ -52,5 +70,7 @@ class ArtistRecommender(object):
 		inxes=inxes[i]
 		dist=dist[i]
 		points = self.U[inxes,:]
+		
+		points = [self.unmapped(p) for p in points]
 		
 		return [dist,self.artist_list[inxes],points]
