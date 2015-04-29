@@ -188,7 +188,6 @@ div.maxside{
 			labels.each(function(){
 				label_array[index].width = this.getBBox().width;
 				label_array[index].height = this.getBBox().height;
-				console.log(label_array[index]);
 				
 				index +=1;
 				});
@@ -234,7 +233,6 @@ div.maxside{
 									success: function(data) {
 											var searchpoint = $.parseJSON(data)
 											
-											console.log(searchpoint);
 											setSlidersTo(searchpoint);
 											
 											UpdateView();
