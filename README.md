@@ -1,6 +1,6 @@
 # reco
 
-A simple proof-of-concept for doing artist/band recommendations using only user-submitted information.
+A simple proof-of-concept for doing artist/band recommendations.
 
 ## How to use
 
