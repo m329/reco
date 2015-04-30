@@ -2,6 +2,20 @@
 {% block title %}Home{% endblock %}
 {% block extraheader %}{% endblock %}
 {% block body %}
-<h1>Music recommendations</h1>
+	<div class="jumbotron">
+		<h1>Music recommendations</h1>
+		<p class="lead">Discover new music!</p>
+	</div>		
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<form action="{{url_for('artist_search_page',_external=True)}}" method="post" name="search">
+					<div class="input-group">
+						Search:<br>{{ form.searchbox(size=40) }}<br>
+						
+						<button type="submit" class="btn btn-md btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"> Search</button>
+					</div>
+				</form>
+			</div>
+		</div>		
 
 {% endblock %}

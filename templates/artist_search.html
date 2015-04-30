@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block extraheader %}{% endblock %}
+{% block body %}
+	<h2>Search results for "{{search_term}}"</h2>
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<ul class="list-group">
+					{% for id, name in artists %}
+					<li class="list-group-item"><a href="{{url_for('artist_page',id=id)}}">{{name}}</a></li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>		
+
+{% endblock %}

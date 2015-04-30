@@ -22,66 +22,111 @@
 		
 		<div class="row">
 			<div class="col-md-2">
-		<img class="img-thumbnail" src='{{ album_cover }}'></img>
+			<div id="artist_thumb"><!--<img class="img-thumbnail" src='{{ album_cover }}'></img>--></div>
+			</div>
+		
+			<div class="col-md-6">
+			{% if trending_status <0 %}
+				<p id="trend" class="trend-down">
+					<span class="glyphicon glyphicon-arrow-down trend-down" aria-hidden="true"></span>
+					{{trending_status}}
+				</p>
+			{% else %}
+			
+				<p id="trend" class="trend-up">
+					<span id="arrow" class="glyphicon glyphicon-arrow-up trend-up" aria-hidden="true"></span>
+					{{trending_status}}
+				</p>
+			{% endif %}
+			</div>
+			<div class="col-md-2">
+				<a class="btn btn-primary btn-md" href="{{url_for('genrevision',by='id',id=artist_id)}}" role="button"><span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span> View in GenreVision</a>
+			</div>
 		</div>
-		
-		<div class="col-md-6">
-		{% if trending_status <0 %}
-			<p id="trend" class="trend-down">
-				<span class="glyphicon glyphicon-arrow-down trend-down" aria-hidden="true"></span>
-				{{trending_status}}
-			</p>
-		{% else %}
-		
-			<p id="trend" class="trend-up">
-				<span id="arrow" class="glyphicon glyphicon-arrow-up trend-up" aria-hidden="true"></span>
-				{{trending_status}}
-			</p>
-		{% endif %}
-		</div>
-		</div>
-		
-		
-
-		
 	  </div>
 	</div>
 		<div class="panel panel-default">
-				<div class="panel-heading">Songs</div>
-	  <div class="panel-body">
+			<div class="panel-heading">Songs</div>
+			<div class="panel-body">
 	
-		
 				<div class="row">
 			
-		{% for song in songdata %}
-		 <div class="col-md-1">
-
-					
-					<a href="{{song.url|safe}}">{{song.songName|safe}}</a>
+				{% for song in songdata %}
+				<div class="col-md-1">
+					<a href="{{song.url|safe}}">
+						<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>{{song.songName|safe}}
+					</a>
+				</div>
+				{% endfor %}
+			</div>
 		</div>
-		{% endfor %}
-		</div>
-		
-	  </div>
 	</div>
 		<div class="panel panel-default">
 			<div class="panel-heading">Similar Artists</div>
 	  <div class="panel-body">
 		
-		
 		<div class="row">
-			
-		{% for simartist in similar_artists %}
-		 <div class="col-md-1">
-					<a href="{{ url_for('artist_page',id=simartist.id) }}">{{simartist.name|safe}}</a>
+			{% for simartist in similar_artists %}
+			 <div id='simdiv{{simartist.id}}' class="col-md-1">
+				{{sim.name|safe}}
+				<div id='simdiv{{simartist.id}}thumb'></div>
+			</div>
+			{% endfor %}
 		</div>
-		{% endfor %}
-		
-		</div>
-		
-		
-		
+
 	  </div>
 	</div>
+
+{% endblock %}
+
+{% block afterboxy %}
+
+<script type='text/javascript'>
+	function debounce(fn, delay) {
+	  var timer = null;
+	  return function () {
+		var context = this, args = arguments;
+		clearTimeout(timer);
+		timer = setTimeout(function () {
+		  fn.apply(context, args);
+		}, delay);
+	  };
+	}
+
+	function set_artist_thumbnail(artist_id,sel){
+		// set artist thumbnail
+			$.ajax({
+				//url: '{{ url_for('json_get_album_cover_urls_for_artist',_external=True,by='id',artist=artist_id,N=1) }}', 
+				url: 'http://'+document.domain + ':' + location.port+'/albumcovers/id/'+artist_id+'/1',
+				method: "GET",
+				success: function(data) {
+					
+					var data=$.parseJSON( data );
+					
+					var url = '';
+					
+					if(data.length>0){
+						url=data[0];
+						console.log(url);
+					}
+					
+					$(sel).append('<img class="img-thumbnail" src='+url+'></img>');
+					
+				}
+			}
+		);
+	}
+
+	
+	$(document).ready(function() {
+		set_artist_thumbnail('{{artist_id}}','#artist_thumb');
+		
+		{% for sim in similar_artists %}
+			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
+			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}link');
+		{% endfor %}
+	
+	});
+</script>
 
 {% endblock %}

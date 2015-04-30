@@ -6,4 +6,5 @@ class FavoritesForm(Form):
 	a1 = StringField('a1', validators=[DataRequired()])
 	a2 = StringField('a2', validators=[DataRequired()])
 	a3 = StringField('a3', validators=[DataRequired()])
-
+class ArtistSearchForm(Form):
+	searchbox = StringField('searchbox', validators=[DataRequired()])

@@ -14,7 +14,7 @@ import os, sys
 import json
 import sqlite3, MySQLdb
 from flask import Flask, render_template, g, request, flash, redirect, url_for
-from forms import FavoritesForm
+from forms import FavoritesForm,ArtistSearchForm
 import requests
 import config
 import numpy as np
@@ -125,7 +125,7 @@ def discogs_search_artist(a):
 	
 	request_url = 'https://api.discogs.com/database/search?artist='+a+'&key='+config.DISCOGS_CONSUMER_KEY+'&secret='+config.DISCOGS_CONSUMER_SECRET
 
-	try:	
+	try:
 		r = cached_request(request_url,headers = {'user-agent': config.DISCOGS_APP_USER_AGENT})
 		return r.json()
 		
@@ -140,11 +140,20 @@ def get_album_cover_urls_for_artist(a,N=3):
 	
 	d = discogs_search_artist(a)
 	
+	thumbs = []
+	
+	N=int(N)
+	
 	try:
-		return [i['thumb'] for i in d['results'] if i['thumb'] != ''][:N]
+		if 'results' in d:
+			for i in d['results']:
+				if i['thumb'] != '':
+					thumbs.append(i['thumb'])
+			return thumbs[:N]
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
-		return []
+	return []
+	
 
 def get_genres_list():
 	db = mysql_get_db()
@@ -162,7 +171,7 @@ def get_genres_list():
 def artist_name_lookup(id):
 	db = mysql_get_db()
 	cur = db.cursor()
-	cur.execute("select artistName from Artists where artistId='"+id+"' limit 1;")
+	cur.execute("select artistName from Artists where artistId='"+str(id)+"' limit 1;")
 	name = cur.fetchone()
 	return name[0]
 
@@ -192,6 +201,20 @@ def artist_id_lookup_soundslike(name):
 	artist_id = cur.fetchone()
 	
 	return str(artist_id[0])
+
+def artist_id_search_soundslike(name,N=20):
+	
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("select concat('%',splitname('"+name+"'),'%') limit 1;")
+	soundex = cur.fetchone()[0]
+	
+	cur = db.cursor()
+	cur.execute("select distinct artistId from Artists where soundName like '"+soundex+"' order by artistPopularityAll desc limit "+str(N)+";")
+	artist_ids = cur.fetchall()
+	
+	return [str(i[0]) for i in artist_ids]
+
 
 def lookup_songs_of_artist(id):
 
@@ -241,7 +264,8 @@ View functions
 
 @app.route("/")
 def index():
-	return render_template('index.html')
+	form = ArtistSearchForm()
+	return render_template('index.html', form=form)
 	
 @app.route('/favorites', methods=['GET'])
 def askfavorites():
@@ -267,10 +291,9 @@ def get_location_from_id_json():
 @app.route('/json/recommend/id',methods=['POST'])
 def recommend_json():
 	artist_id = request.form['aid']
-	print artist_id
 	
 	[dist,ids,points]=get_recommender().recommend(artist_id,k=20)
-	names = [unicode(artist_name_lookup(i), errors='replace') for i in ids]
+	names = [artist_name_lookup(i) for i in ids]
 	
 	dist = (dist/np.max(dist)) # return relative normalize distance (scale of 0-1)
 	
@@ -322,7 +345,7 @@ def artist_page(id=None):
 	artist_name = artist_name_lookup(id)
 	
 	# find similar artists
-	[dist,ids,points] = get_recommender().recommend(id,k=5)
+	[dist,ids,points] = get_recommender().recommend(id,k=10)
 	names = [artist_name_lookup(i) for i in ids]
 	
 	order=np.argsort(dist)
@@ -330,23 +353,7 @@ def artist_page(id=None):
 	ids = np.array(ids)[order].tolist()
 	
 	trending_status = np.round(get_trending_status(id))
-	
-	"""
-	album_covers = []
-	for n in names:
-		u=get_album_cover_urls_for_artist(n,N=1)
-		album_covers.append(u)
-	
-	similar_artists = [ {'name':n,'id':i,'thumb':a} for n,i,a in itertools.izip(names,ids,album_covers)]
-	
-	# 					<!--<img class="img-thumbnail" src='{{simartist.thumb}}'></img>
-	"""
-
-	album_covers = []
-	for n in names:
-		u=get_album_cover_urls_for_artist(n,N=1)
-		album_covers.append(u)
-	
+		
 	similar_artists = [ {'name':n,'id':i} for n,i in itertools.izip(names,ids)]
 	
 	# find songs
@@ -354,7 +361,23 @@ def artist_page(id=None):
 	for song in lookup_songs_of_artist(id):
 		songdata.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
 	
-	return render_template('artist_page.html',artist_id=id,artist_name=artist_name,similar_artists=similar_artists,songdata=songdata,album_cover=get_album_cover_urls_for_artist(artist_name,N=1)[0],trending_status=trending_status)
+	return render_template('artist_page.html',artist_id=id,artist_name=artist_name,similar_artists=similar_artists,songdata=songdata,trending_status=trending_status)
+
+@app.route("/artistsearch/",methods=['POST'])
+def artist_search_page():
+	search_term = request.form['searchbox']
+	artist_ids = artist_id_search_soundslike(search_term,N=50)
+	artist_names = [artist_name_lookup(str(i)) for i in artist_ids]
+	return render_template('artist_search.html',search_term=search_term,artists=itertools.izip(artist_ids,artist_names))
+
+@app.route("/albumcovers/<by>/<artist>/<N>")
+@app.route("/albumcovers/<by>/<artist>")
+def json_get_album_cover_urls_for_artist(by,artist,N=1):
+	if by=='id':
+		artist_name=artist_name_lookup(artist)
+	else:
+		artist_name=artist
+	return json.dumps(get_album_cover_urls_for_artist(artist_name,N=N))
 
 @app.route("/genres")	
 def genres():
