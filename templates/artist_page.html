@@ -22,7 +22,7 @@
 		
 		<div class="row">
 			<div class="col-md-2">
-			<div id="artist_thumb"><!--<img class="img-thumbnail" src='{{ album_cover }}'></img>--></div>
+			<div id="artist_thumb"></div>
 			</div>
 		
 			<div class="col-md-6">
@@ -40,7 +40,7 @@
 			{% endif %}
 			</div>
 			<div class="col-md-2">
-				<a class="btn btn-primary btn-md" href="{{url_for('genrevision',by='id',id=artist_id)}}" role="button"><span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span> View in GenreVision</a>
+				<a class="btn btn-primary btn-md" href="{{url_for('genrevision')}}/id/{{artist_id}}" role="button"><span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span> View in GenreVision</a>
 			</div>
 		</div>
 	  </div>
@@ -68,8 +68,8 @@
 		<div class="row">
 			{% for simartist in similar_artists %}
 			 <div id='simdiv{{simartist.id}}' class="col-md-1">
-				{{sim.name|safe}}
 				<div id='simdiv{{simartist.id}}thumb'></div>
+				{{simartist.name|safe}}
 			</div>
 			{% endfor %}
 		</div>
@@ -96,7 +96,6 @@
 	function set_artist_thumbnail(artist_id,sel){
 		// set artist thumbnail
 			$.ajax({
-				//url: '{{ url_for('json_get_album_cover_urls_for_artist',_external=True,by='id',artist=artist_id,N=1) }}', 
 				url: 'http://'+document.domain + ':' + location.port+'/albumcovers/id/'+artist_id+'/1',
 				method: "GET",
 				success: function(data) {
@@ -123,7 +122,7 @@
 		
 		{% for sim in similar_artists %}
 			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
-			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}link');
+			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}thumb');
 		{% endfor %}
 	
 	});
