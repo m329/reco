@@ -21,6 +21,7 @@ import numpy as np
 from recommender import ArtistRecommender
 import json
 import itertools
+import random
 
 app = Flask(__name__)
 
