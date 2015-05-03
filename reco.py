@@ -233,28 +233,28 @@ def get_trending_status(id):
 	cur.execute("select artistPopularityRecent,artistPopularityAll from Artists where artistId='"+id+"' limit 1;")
 	[recent,theall] = cur.fetchone()
 
-	mu = get_ratio_of_mean_popularity_ratio()
+	mu = get_mean_popularity_ratio()
 
 	return int(recent - (theall*mu))
 	
-def get_ratio_of_mean_popularity_ratio():
-	"""	open a new database connection if there is none yet for the current application context """
-	if not hasattr(g, 'ratio_of_mean_popularity_ratio'):
+def get_mean_popularity_ratio():
+	"""	get the ratio of mean popularity (recent / all) """
+	if not hasattr(g, 'mean_popularity_ratio'):
 		
 		db = mysql_get_db()
 		cur = db.cursor()
 		cur.execute("select avg(artistPopularityRecent)/avg(artistPopularityAll) from Artists limit 1;")
 		mu = cur.fetchone()[0]
 		
-		g.ratio_of_mean_popularity_ratio = mu
-	return g.ratio_of_mean_popularity_ratio
+		g.mean_popularity_ratio = mu
+	return g.mean_popularity_ratio
 
 """
 KDTree / SVD stuff
 """
 
 def get_recommender():
-	"""	open a new database connection if there is none yet for the current application context """
+	"""	returns the artist recommender object """
 	if not hasattr(g, 'recommender'):
 		g.recommender = ArtistRecommender()
 	return g.recommender
