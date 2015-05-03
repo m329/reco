@@ -97,6 +97,21 @@ def mysql_close_db(error):
 		g.mysql_db.close()
 
 """
+General recommendation database setting, use table SubTables
+"""
+
+def mysql_connect_subdb():
+	""" connect to the specific database """
+	c = MySQLdb.connect(host=app.config['MYSQL_HOST'],port=app.config['MYSQL_PORT'],db='SubTables',user=app.config['MYSQL_USER'],passwd=app.config['MYSQL_PASSWORD'],use_unicode=True,charset='utf8', init_command='SET NAMES UTF8')
+	return c
+
+def mysql_get_subdb():
+	"""	open a new database connection if there is none yet for the current application context """
+	if not hasattr(g, 'mysql_subdb'):
+		g.mysql_subdb = mysql_connect_subdb()
+	return g.mysql_subdb
+
+"""
 Helper functions
 """
 
@@ -258,26 +273,6 @@ def get_recommender():
 	if not hasattr(g, 'recommender'):
 		g.recommender = ArtistRecommender()
 	return g.recommender
-
-
-
-"""
-General recommendation database setting, use table SubTables
-"""
-
-def mysql_connect_subdb():
-	""" connect to the specific database """
-	c = MySQLdb.connect(host=app.config['MYSQL_HOST'],port=app.config['MYSQL_PORT'],db='SubTables',user=app.config['MYSQL_USER'],passwd=app.config['MYSQL_PASSWORD'],use_unicode=True,charset='utf8', init_command='SET NAMES UTF8')
-	return c
-
-def mysql_get_subdb():
-	"""	open a new database connection if there is none yet for the current application context """
-	if not hasattr(g, 'mysql_db'):
-		g.mysql_subdb = mysql_connect_subdb()
-	return g.mysql_subdb
-
-
-
 
 """
 View functions
