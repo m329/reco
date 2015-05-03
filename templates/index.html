@@ -16,6 +16,128 @@
 					</div>
 				</form>
 			</div>
-		</div>		
+		</div>
+		
+	<div class="panel panel-default">
+			<div class="panel-heading">Trending Songs</div>
+			<div class="panel-body">
+	
+				<div class="row">
+			
+				{% for song in tren_song %}
+				<div class="col-md-1">
+					<a href="{{song.url|safe}}">
+						<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>{{song.songName|safe}}
+					</a>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	
+	<div class="panel panel-default">
+			<div class="panel-heading">Trending Artists</div>
+	  <div class="panel-body">
+		
+		<div class="row">
+			{% for simartist in tren_artist %}
+			 <div id='simdiv{{simartist.id}}' class="col-md-1">
+				<div id='simdiv{{simartist.id}}thumb'></div>
+				{{simartist.name|safe}}
+			</div>
+			{% endfor %}
+		</div>
+
+	  </div>
+	</div>
+	
+	<div class="panel panel-default">
+			<div class="panel-heading">Popular Songs</div>
+			<div class="panel-body">
+	
+				<div class="row">
+			
+				{% for song in popu_song %}
+				<div class="col-md-1">
+					<a href="{{song.url|safe}}">
+						<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>{{song.songName|safe}}
+					</a>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	
+	<div class="panel panel-default">
+			<div class="panel-heading">Popular Artists</div>
+	  <div class="panel-body">
+		
+		<div class="row">
+			{% for simartist in popu_artist %}
+			 <div id='simdiv{{simartist.id}}' class="col-md-1">
+				<div id='simdiv{{simartist.id}}thumb'></div>
+				{{simartist.name|safe}}
+			</div>
+			{% endfor %}
+		</div>
+
+	  </div>
+	</div>
+	
+{% endblock %}
+
+
+{% block afterboxy %}
+
+<script type='text/javascript'>
+	function debounce(fn, delay) {
+	  var timer = null;
+	  return function () {
+		var context = this, args = arguments;
+		clearTimeout(timer);
+		timer = setTimeout(function () {
+		  fn.apply(context, args);
+		}, delay);
+	  };
+	}
+
+	function set_artist_thumbnail(artist_id,sel){
+		// set artist thumbnail
+			$.ajax({
+				url: 'http://'+document.domain + ':' + location.port+'/albumcovers/id/'+artist_id+'/1',
+				method: "GET",
+				success: function(data) {
+					
+					var data=$.parseJSON( data );
+					
+					var url = '';
+					
+					if(data.length>0){
+						url=data[0];
+						console.log(url);
+					}
+					
+					$(sel).append('<img class="img-thumbnail" src='+url+'></img>');
+					
+				}
+			}
+		);
+	}
+
+	
+	$(document).ready(function() {
+		 ('{{artist_id}}','#artist_thumb');
+		
+		{% for sim in tren_artist %}
+			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
+			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}thumb');
+		{% endfor %}
+		{% for sim in popu_artist %}
+			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
+			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}thumb');
+		{% endfor %}
+	
+	});
+</script>
 
 {% endblock %}
