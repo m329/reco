@@ -302,7 +302,7 @@ def index():
 	
 	
 	#Trending Artists
-	q = "select distinct artistName, artistId from trenArtist;"
+	q = "select distinct artistName, artistId from recArtist limit 50;"
 	cur.execute(q)	
 	dbresults_t = cur.fetchall()
 	dbresults = [i for i in dbresults_t]
