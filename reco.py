@@ -21,6 +21,7 @@ import numpy as np
 from recommender import ArtistRecommender
 import json
 import itertools
+import random
 
 app = Flask(__name__)
 
@@ -258,6 +259,26 @@ def get_recommender():
 		g.recommender = ArtistRecommender()
 	return g.recommender
 
+
+
+"""
+General recommendation database setting, use table SubTables
+"""
+
+def mysql_connect_subdb():
+	""" connect to the specific database """
+	c = MySQLdb.connect(host=app.config['MYSQL_HOST'],port=app.config['MYSQL_PORT'],db='SubTables',user=app.config['MYSQL_USER'],passwd=app.config['MYSQL_PASSWORD'],use_unicode=True,charset='utf8', init_command='SET NAMES UTF8')
+	return c
+
+def mysql_get_subdb():
+	"""	open a new database connection if there is none yet for the current application context """
+	if not hasattr(g, 'mysql_db'):
+		g.mysql_subdb = mysql_connect_subdb()
+	return g.mysql_subdb
+
+
+
+
 """
 View functions
 """
@@ -265,7 +286,59 @@ View functions
 @app.route("/")
 def index():
 	form = ArtistSearchForm()
-	return render_template('index.html', form=form)
+	
+	""" Display the general recommendation """
+	db = mysql_get_subdb()	
+	cur = db.cursor()
+	
+	Nlim = 8 # number of items to show
+		
+	#Trending Songs
+	q = "select youtubeId,songName,url from trenSong order by viewCount desc limit 30;"
+	cur.execute(q)
+	songs_t = cur.fetchall()
+	songs = [i for i in songs_t]
+	while len(songs) > Nlim :
+		tmp = random.choice(songs)
+		songs.remove(tmp)		
+	tren_song = []
+	for song in songs:
+		tren_song.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
+	
+	
+	#Trending Artists
+	q = "select distinct artistName, artistId from trenArtist;"
+	cur.execute(q)	
+	dbresults_t = cur.fetchall()
+	dbresults = [i for i in dbresults_t]
+	while len(dbresults) > Nlim :
+		tmp = random.choice(dbresults)
+		dbresults.remove(tmp)	
+	tren_artist = [ {'name':n,'id':i} for (n,i) in dbresults]
+	
+	#popular Songs
+	q = "select youtubeId,songName,url from popuSong order by viewCount desc limit 30;"
+	cur.execute(q)
+	songs_t = cur.fetchall()
+	songs = [i for i in songs_t]	
+	while len(songs) > Nlim :
+		tmp = random.choice(songs)
+		songs.remove(tmp)
+	popu_song = []
+	for song in songs:
+		popu_song.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
+	
+	#Popular Artists
+	q = "select distinct artistName, artistId from popuArtist order by artistPopularityAll Desc limit 50;"
+	cur.execute(q)	
+	dbresults_t = cur.fetchall()
+	dbresults = [i for i in dbresults_t]
+	while len(dbresults) > Nlim :
+		tmp = random.choice(dbresults)
+		dbresults.remove(tmp)
+	popu_artist = [ {'name':n,'id':i} for (n,i) in dbresults]	
+	
+	return render_template('index.html', form=form, popu_artist=popu_artist,popu_song=popu_song, tren_artist=tren_artist, tren_song = tren_song)
 	
 @app.route('/favorites', methods=['GET'])
 def askfavorites():
