@@ -40,10 +40,10 @@
 	  <div class="panel-body">
 		
 		<div class="row">
-			{% for simartist in tren_artist %}
-			 <div id='simdiv{{simartist.id}}' class="col-md-1">
-				<div id='simdiv{{simartist.id}}thumb'></div>
-				{{simartist.name|safe}}
+			{% for trena in tren_artist %}
+			 <div id='trendiv{{trena.id}}' class="col-md-1">
+				<div id='trendiv{{trena.id}}thumb'></div>
+				{{trena.name|safe}}
 			</div>
 			{% endfor %}
 		</div>
@@ -73,10 +73,10 @@
 	  <div class="panel-body">
 		
 		<div class="row">
-			{% for simartist in popu_artist %}
-			 <div id='simdiv{{simartist.id}}' class="col-md-1">
-				<div id='simdiv{{simartist.id}}thumb'></div>
-				{{simartist.name|safe}}
+			{% for popu in popu_artist %}
+			 <div id='popdiv{{popu.id}}' class="col-md-1">
+				<div id='popdiv{{popu.id}}thumb'></div>
+				{{popu.name|safe}}
 			</div>
 			{% endfor %}
 		</div>
@@ -128,13 +128,13 @@
 	$(document).ready(function() {
 		 ('{{artist_id}}','#artist_thumb');
 		
-		{% for sim in tren_artist %}
-			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
-			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}thumb');
+		{% for tre in tren_artist %}
+			$('#trendiv{{tre.id}}').wrap('<a href="{{ url_for('artist_page',id=tre.id) }}"></a>');
+			set_artist_thumbnail('{{tre.id}}','#trendiv{{tre.id}}thumb');
 		{% endfor %}
-		{% for sim in popu_artist %}
-			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
-			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}thumb');
+		{% for popu in popu_artist %}
+			$('#popdiv{{popu.id}}').wrap('<a href="{{ url_for('artist_page',id=popu.id) }}"></a>');
+			set_artist_thumbnail('{{popu.id}}','#popdiv{{popu.id}}thumb');
 		{% endfor %}
 	
 	});
