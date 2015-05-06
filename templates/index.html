@@ -42,7 +42,7 @@
 		<div class="row">
 			{% for trena in tren_artist %}
 			 <div id='trendiv{{trena.id}}' class="col-md-1">
-				<div id='trendiv{{trena.id}}thumb'></div>
+					<img id='trendiv{{trena.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 				{{trena.name|safe}}
 			</div>
 			{% endfor %}
@@ -75,7 +75,7 @@
 		<div class="row">
 			{% for popu in popu_artist %}
 			 <div id='popdiv{{popu.id}}' class="col-md-1">
-				<div id='popdiv{{popu.id}}thumb'></div>
+				<img id='popdiv{{popu.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 				{{popu.name|safe}}
 			</div>
 			{% endfor %}
@@ -117,7 +117,10 @@
 						console.log(url);
 					}
 					
-					$(sel).append('<img class="img-thumbnail" src='+url+'></img>');
+					if(url!=''){
+						$(sel).attr('src',url);
+					}
+					
 					
 				}
 			}
