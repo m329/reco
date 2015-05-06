@@ -22,7 +22,8 @@
 		
 		<div class="row">
 			<div class="col-md-2">
-			<div id="artist_thumb"></div>
+			<div id="artist_thumb_wrap"></div>
+				<img id='artist_thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 			</div>
 		
 			<div class="col-md-6">
@@ -68,7 +69,7 @@
 		<div class="row">
 			{% for simartist in similar_artists %}
 			 <div id='simdiv{{simartist.id}}' class="col-md-1">
-				<div id='simdiv{{simartist.id}}thumb'></div>
+				<img id='simdiv{{simartist.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 				{{simartist.name|safe}}
 			</div>
 			{% endfor %}
@@ -109,7 +110,9 @@
 						console.log(url);
 					}
 					
-					$(sel).append('<img class="img-thumbnail" src='+url+'></img>');
+					if(url!=''){
+						$(sel).attr('src',url);
+					}
 					
 				}
 			}
