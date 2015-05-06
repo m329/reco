@@ -216,33 +216,39 @@ div.maxside{
 
 
 	$( "#searchbox" ).keyup(debounce(function( event ) {
-			
+			var searchterm = $('#searchbox').val();
+			if(searchterm!=''){
 			$.ajax({
 				url: '{{ url_for('search_artist_id_lookup_soundslike',_external=True) }}', 
 				method: "POST",
 				data: {search_term: $('#searchbox').val()},
 				success: function(data) {
 					
-						var artist_id=$.parseJSON( data );
+						var dataj=$.parseJSON(data);
+						
+						if (dataj['status']=='success'){
+												
 					
-					
-								$.ajax({
-										url: '{{ url_for('get_location_from_id_json',_external=True) }}', 
-									method: "POST",
-									data: {aid: (artist_id[0]).toString()},
-									success: function(data) {
-											var searchpoint = $.parseJSON(data)
-											
-											setSlidersTo(searchpoint);
-											
-											UpdateView();
-											
-										}
-									});
+							$.ajax({
+									url: '{{ url_for('get_location_from_id_json',_external=True) }}', 
+								method: "POST",
+								data: {aid: (dataj['id']).toString()},
+								success: function(data) {
+										var searchpoint = $.parseJSON(data)
+										
+										setSlidersTo(searchpoint);
+										
+										UpdateView();
+										
+									}
+								});
+							
+						}
 					
 					
 				}
 			});
+		}
 	},500));
 	
 	

@@ -215,8 +215,10 @@ def artist_id_lookup_soundslike(name):
 	cur = db.cursor()
 	cur.execute("select artistId from Artists where soundName like '"+soundex+"' order by artistPopularityAll desc limit 1;")
 	artist_id = cur.fetchone()
-	
-	return str(artist_id[0])
+	if artist_id is not None:
+		return str(artist_id[0])
+	else:
+		return None
 
 def artist_id_search_soundslike(name,N=20):
 	
@@ -390,7 +392,10 @@ def search_artist_id_lookup_soundslike():
 	
 	artistId = artist_id_lookup_soundslike(search)
 	
-	return json.dumps([artistId])
+	if artistId is not None:
+		return json.dumps({'id':artistId,'status':'success'})
+	else:
+		return json.dumps({'id':'0','status':'error'})
 	
 	
 
