@@ -47,26 +47,27 @@
 	</div>
 		
 	<h3>Songs</h3>
-	
-	<div class="row">
-		{% for song in songdata %}
-		<div class="col-md-2">
-			<div class="thumbnail">
-			<a href="{{song.url|safe}}">
-				<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
-				<div class="caption frontpage-caption">{{song.songName|safe}}</div>
-			</a>
-			</div>
+
+	<div class="the-masonry-container">
+	{% for song in songdata %}
+	<div class="col-md-2">
+		<div class="thumbnail item">
+		<a href="{{song.url|safe}}">
+			<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
+			<div class="caption frontpage-caption">{{song.songName|safe}}</div>
+		</a>
 		</div>
-		{% endfor %}
 	</div>
+	{% endfor %}
+	</div>
+
 
 	<h3>Similar Artists</h3>
 	
-	<div class="row">
+	<div class="the-masonry-container">
 		{% for simartist in similar_artists %}
 		 <div id='simdiv{{simartist.id}}' class="col-md-2">
-			<div class="thumbnail">
+			<div class="thumbnail item">
 				<img id='simdiv{{simartist.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 				<div class="caption frontpage-caption">{{simartist.name|safe}}</div>
 			</div>
@@ -119,9 +120,19 @@
 	$(document).ready(function() {
 		set_artist_thumbnail('{{artist_id}}','#artist_thumb');
 		
+		// initialize Masonry containers
+		$('.the-masonry-container').each(function( index ) {
+			$( this ).masonry();
+		});
+		
 		{% for sim in similar_artists %}
 			$('#simdiv{{sim.id}}').wrap('<a href="{{ url_for('artist_page',id=sim.id) }}"></a>');
 			set_artist_thumbnail('{{sim.id}}','#simdiv{{sim.id}}thumb');
+			
+			// initialize Masonry containers
+			$('.the-masonry-container').each(function( index ) {
+				$( this ).masonry();
+			});			
 		{% endfor %}
 	
 	});

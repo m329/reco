@@ -33,12 +33,12 @@ div.frontpage-caption{
 
 	<h3>Trending Songs</h3>
 
-	<div class="row">
+	<div class="the-masonry-container">
 
 		{% for song in tren_song %}
 		<div class="col-md-3">
 			<a href="{{song.url|safe}}">
-				<div class="thumbnail">
+				<div class="thumbnail item">
 					<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
 					<div class="caption frontpage-caption">
 						<h4>{{song.songName|safe}}</h4>
@@ -47,16 +47,15 @@ div.frontpage-caption{
 			</a>
 		</div>
 		{% endfor %}
-		<div class="clearfix visible-md-block"></div>
 		
 	</div>
 
 	<h3>Trending Artists</h3>
 	
-	<div class="row">
+	<div class="the-masonry-container">
 		{% for trena in tren_artist %}
 		 <div id='trendiv{{trena.id}}' class="col-md-3">
-			 <div class="thumbnail">
+			 <div class="thumbnail item">
 				<img id='trendiv{{trena.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 				<div class="caption frontpage-caption">
 					<h4>{{trena.name|safe}}</h4>
@@ -69,11 +68,11 @@ div.frontpage-caption{
 
 	<h3>Popular Songs</h3>
 
-	<div class="row">
+	<div class="the-masonry-container">
 		{% for song in popu_song %}
 			<div class="col-md-3">
 				<a href="{{song.url|safe}}">
-					<div class="thumbnail">
+					<div class="thumbnail item">
 						
 							<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
 						
@@ -89,10 +88,10 @@ div.frontpage-caption{
 
 	<h3>Popular Artists</h3>
 	
-	<div class="row">
+	<div class="the-masonry-container">
 		{% for popu in popu_artist %}
 		 <div id='popdiv{{popu.id}}' class="col-md-3">
-			<div class="thumbnail">
+			<div class="thumbnail item">
 				<img id='popdiv{{popu.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
 				<div class="caption frontpage-caption">
 					<h4>{{popu.name|safe}}</h4>
@@ -109,6 +108,7 @@ div.frontpage-caption{
 {% block afterboxy %}
 
 <script type='text/javascript'>
+		
 	function debounce(fn, delay) {
 	  var timer = null;
 	  return function () {
@@ -149,13 +149,28 @@ div.frontpage-caption{
 	
 	$(document).ready(function() {
 	
+		// initialize Masonry containers
+		$('.the-masonry-container').each(function( index ) {
+			$( this ).masonry();
+		});
+	
 		{% for tre in tren_artist %}
 			$('#trendiv{{tre.id}}').wrap('<a href="{{ url_for('artist_page',id=tre.id) }}"></a>');
 			set_artist_thumbnail('{{tre.id}}','#trendiv{{tre.id}}thumb');
+
+			$('.the-masonry-container').each(function( index ) {
+				$( this ).masonry();
+			});
+
 		{% endfor %}
 		{% for popu in popu_artist %}
 			$('#popdiv{{popu.id}}').wrap('<a href="{{ url_for('artist_page',id=popu.id) }}"></a>');
 			set_artist_thumbnail('{{popu.id}}','#popdiv{{popu.id}}thumb');
+
+			$('.the-masonry-container').each(function( index ) {
+				$( this ).masonry();
+			});
+			
 		{% endfor %}
 	
 	});
