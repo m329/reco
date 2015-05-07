@@ -189,7 +189,10 @@ def artist_name_lookup(id):
 	cur = db.cursor()
 	cur.execute("select artistName from Artists where artistId='"+str(id)+"' limit 1;")
 	name = cur.fetchone()
-	return name[0]
+	if name is not None:
+		return name[0]
+	else:
+		return None
 
 def artist_name_popularity_lookup(id):
 	db = mysql_get_db()
@@ -234,11 +237,11 @@ def artist_id_search_soundslike(name,N=20):
 	return [str(i[0]) for i in artist_ids]
 
 
-def lookup_songs_of_artist(id):
+def lookup_songs_of_artist(id,N=10):
 
 	db = mysql_get_db()
 	cur = db.cursor()
-	cur.execute("select youtubeId,songName,url from Songs where artistId='"+id+"' order by viewCount desc limit 10;")
+	cur.execute("select youtubeId,songName,url from Songs where artistId='"+id+"' order by viewCount desc limit "+str(N)+";")
 	songs = cur.fetchall()
 	
 	return songs
@@ -418,7 +421,7 @@ def artist_page(id=None):
 	artist_name = artist_name_lookup(id)
 	
 	# find similar artists
-	[dist,ids,points] = get_recommender().recommend(id,k=10)
+	[dist,ids,points] = get_recommender().recommend(id,k=11)
 	names = [artist_name_lookup(i) for i in ids]
 	
 	order=np.argsort(dist)
@@ -431,7 +434,7 @@ def artist_page(id=None):
 	
 	# find songs
 	songdata = []
-	for song in lookup_songs_of_artist(id):
+	for song in lookup_songs_of_artist(id,N=12):
 		songdata.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
 	
 	return render_template('artist_page.html',artist_id=id,artist_name=artist_name,similar_artists=similar_artists,songdata=songdata,trending_status=trending_status)
