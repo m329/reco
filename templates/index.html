@@ -1,88 +1,107 @@
 {% extends "layout.html" %}
 {% block title %}Home{% endblock %}
-{% block extraheader %}{% endblock %}
+{% block extraheader %}
+<style>
+div.frontpage-caption{
+	text-align: center;
+}
+</style>
+{% endblock %}
 {% block body %}
+
 	<div class="jumbotron">
 		<h1>Music recommendations</h1>
 		<p class="lead">Discover new music!</p>
 	</div>		
-		<div class="panel panel-default">
-			<div class="panel-body">
-				<form action="{{url_for('artist_search_page',_external=True)}}" method="post" name="search">
-					<div class="input-group">
-						Search:<br>{{ form.searchbox(size=40) }}<br>
+			
+	<form class="form-horizontal" action="{{url_for('artist_search_page',_external=True)}}" method="post" name="search">
+			<div class="form-group form-group-lg">
+
+						<div class="col-md-2">	</div>
+					
+						<div class="input-group col-md-8">
+							<input id="searchbox" name="searchbox" type="text" class="form-control inputlg" placeholder="Search for an artist...">
+							<span class="input-group-btn">
+								<button class="btn btn-default btn-lg" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"> Search!</button>
+							</span>
+						</div>
+					
+						<div class="col-md-2"></div>
 						
-						<button type="submit" class="btn btn-md btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"> Search</button>
+			</div>
+	</form>
+
+	<h3>Trending Songs</h3>
+
+	<div class="row">
+
+		{% for song in tren_song %}
+		<div class="col-md-3">
+			<a href="{{song.url|safe}}">
+				<div class="thumbnail">
+					<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
+					<div class="caption frontpage-caption">
+						<h4>{{song.songName|safe}}</h4>
 					</div>
-				</form>
-			</div>
-		</div>
-		
-	<div class="panel panel-default">
-			<div class="panel-heading">Trending Songs</div>
-			<div class="panel-body">
-	
-				<div class="row">
-			
-				{% for song in tren_song %}
-				<div class="col-md-1">
-					<a href="{{song.url|safe}}">
-						<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>{{song.songName|safe}}
-					</a>
 				</div>
-				{% endfor %}
-			</div>
+			</a>
 		</div>
-	</div>
-	
-	<div class="panel panel-default">
-			<div class="panel-heading">Trending Artists</div>
-	  <div class="panel-body">
+		{% endfor %}
+		<div class="clearfix visible-md-block"></div>
 		
-		<div class="row">
-			{% for trena in tren_artist %}
-			 <div id='trendiv{{trena.id}}' class="col-md-1">
-					<img id='trendiv{{trena.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
-				{{trena.name|safe}}
-			</div>
-			{% endfor %}
-		</div>
+	</div>
 
-	  </div>
-	</div>
+	<h3>Trending Artists</h3>
 	
-	<div class="panel panel-default">
-			<div class="panel-heading">Popular Songs</div>
-			<div class="panel-body">
-	
-				<div class="row">
-			
-				{% for song in popu_song %}
-				<div class="col-md-1">
-					<a href="{{song.url|safe}}">
-						<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>{{song.songName|safe}}
-					</a>
+	<div class="row">
+		{% for trena in tren_artist %}
+		 <div id='trendiv{{trena.id}}' class="col-md-3">
+			 <div class="thumbnail">
+				<img id='trendiv{{trena.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
+				<div class="caption frontpage-caption">
+					<h4>{{trena.name|safe}}</h4>
 				</div>
-				{% endfor %}
 			</div>
 		</div>
+		{% endfor %}
 	</div>
+
+
+	<h3>Popular Songs</h3>
+
+	<div class="row">
+		{% for song in popu_song %}
+			<div class="col-md-3">
+				<a href="{{song.url|safe}}">
+					<div class="thumbnail">
+						
+							<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
+						
+						<div class="caption frontpage-caption">
+							<h4>{{song.songName|safe}}</h4>
+						</div>
+					</div>
+				</a>
+			</div>
+		{% endfor %}
+	</div>
+
+
+	<h3>Popular Artists</h3>
 	
-	<div class="panel panel-default">
-			<div class="panel-heading">Popular Artists</div>
-	  <div class="panel-body">
-		
-		<div class="row">
-			{% for popu in popu_artist %}
-			 <div id='popdiv{{popu.id}}' class="col-md-1">
+	<div class="row">
+		{% for popu in popu_artist %}
+		 <div id='popdiv{{popu.id}}' class="col-md-3">
+			<div class="thumbnail">
 				<img id='popdiv{{popu.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
-				{{popu.name|safe}}
+				<div class="caption frontpage-caption">
+					<h4>{{popu.name|safe}}</h4>
+				</div>
 			</div>
-			{% endfor %}
 		</div>
-
-	  </div>
+		{% endfor %}
 	</div>
+
 	
 {% endblock %}
 
@@ -129,8 +148,7 @@
 
 	
 	$(document).ready(function() {
-		 ('{{artist_id}}','#artist_thumb');
-		
+	
 		{% for tre in tren_artist %}
 			$('#trendiv{{tre.id}}').wrap('<a href="{{ url_for('artist_page',id=tre.id) }}"></a>');
 			set_artist_thumbnail('{{tre.id}}','#trendiv{{tre.id}}thumb');

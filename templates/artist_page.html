@@ -16,68 +16,64 @@
 </style>
 {% endblock %}
 {% block body %}
-		<div class="panel panel-default">
-	  <div class="panel-body">
-		<h1>{{artist_name}}</h1>
+	<div class="panel panel-default">
+		<div class="panel-body">
+			<h1>{{artist_name}}</h1>
 		
-		<div class="row">
-			<div class="col-md-2">
-			<div id="artist_thumb_wrap"></div>
-				<img id='artist_thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
-			</div>
+			<div class="row">
+				<div class="col-md-2">
+					<div id="artist_thumb_wrap"></div>
+						<img id='artist_thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
+					</div>
 		
-			<div class="col-md-6">
-			{% if trending_status <0 %}
-				<p id="trend" class="trend-down">
-					<span class="glyphicon glyphicon-arrow-down trend-down" aria-hidden="true"></span>
-					{{trending_status}}
-				</p>
-			{% else %}
-			
-				<p id="trend" class="trend-up">
-					<span id="arrow" class="glyphicon glyphicon-arrow-up trend-up" aria-hidden="true"></span>
-					{{trending_status}}
-				</p>
-			{% endif %}
-			</div>
-			<div class="col-md-2">
-				<a class="btn btn-primary btn-md" href="{{url_for('genrevision')}}/id/{{artist_id}}" role="button"><span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span> View in GenreVision</a>
-			</div>
-		</div>
-	  </div>
-	</div>
-		<div class="panel panel-default">
-			<div class="panel-heading">Songs</div>
-			<div class="panel-body">
-	
-				<div class="row">
-			
-				{% for song in songdata %}
-				<div class="col-md-1">
-					<a href="{{song.url|safe}}">
-						<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>{{song.songName|safe}}
-					</a>
+				<div class="col-md-6">
+					{% if trending_status <0 %}
+					<p id="trend" class="trend-down">
+						<span class="glyphicon glyphicon-arrow-down trend-down" aria-hidden="true"></span>
+						{{trending_status}}
+					</p>
+					{% else %}
+					<p id="trend" class="trend-up">
+						<span id="arrow" class="glyphicon glyphicon-arrow-up trend-up" aria-hidden="true"></span>
+						{{trending_status}}
+					</p>
+					{% endif %}
 				</div>
-				{% endfor %}
+				<div class="col-md-2">
+					<a class="btn btn-primary btn-lg" href="{{url_for('genrevision')}}/id/{{artist_id}}" role="button"><span class="glyphicon glyphicon-sunglasses" aria-hidden="true"></span> View in GenreVision</a>
+				</div>
 			</div>
 		</div>
 	</div>
-		<div class="panel panel-default">
-			<div class="panel-heading">Similar Artists</div>
-	  <div class="panel-body">
 		
-		<div class="row">
-			{% for simartist in similar_artists %}
-			 <div id='simdiv{{simartist.id}}' class="col-md-1">
-				<img id='simdiv{{simartist.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
-				{{simartist.name|safe}}
+	<h3>Songs</h3>
+	
+	<div class="row">
+		{% for song in songdata %}
+		<div class="col-md-2">
+			<div class="thumbnail">
+			<a href="{{song.url|safe}}">
+				<img class="img-thumbnail" src="http://img.youtube.com/vi/{{song.youtubeId|safe}}/0.jpg"></img>
+				<div class="caption frontpage-caption">{{song.songName|safe}}</div>
+			</a>
 			</div>
-			{% endfor %}
 		</div>
-
-	  </div>
+		{% endfor %}
 	</div>
 
+	<h3>Similar Artists</h3>
+	
+	<div class="row">
+		{% for simartist in similar_artists %}
+		 <div id='simdiv{{simartist.id}}' class="col-md-2">
+			<div class="thumbnail">
+				<img id='simdiv{{simartist.id}}thumb' class="img-thumbnail" src="{{ url_for('static', filename='images/empty.jpg') }}"></img>
+				<div class="caption frontpage-caption">{{simartist.name|safe}}</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	
 {% endblock %}
 
 {% block afterboxy %}
