@@ -189,7 +189,10 @@ def artist_name_lookup(id):
 	cur = db.cursor()
 	cur.execute("select artistName from Artists where artistId='"+str(id)+"' limit 1;")
 	name = cur.fetchone()
-	return name[0]
+	if name is not None:
+		return name[0]
+	else:
+		return None
 
 def artist_name_popularity_lookup(id):
 	db = mysql_get_db()
