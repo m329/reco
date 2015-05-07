@@ -326,7 +326,7 @@ def index():
 		popu_song.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
 	
 	#Popular Artists
-	q = "select distinct artistName, artistId from popuArtist order by artistPopularityAll Desc limit 50;"
+	q = "select distinct artistName, artistId from popuArtist group by artistName order by artistPopularityAll Desc limit 50;"
 	cur.execute(q)	
 	dbresults_t = cur.fetchall()
 	dbresults = [i for i in dbresults_t]
