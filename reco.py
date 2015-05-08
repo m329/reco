@@ -234,9 +234,48 @@ def artist_id_search_soundslike(name,N=20):
 	cur.execute("select distinct artistId from Artists where soundName like '"+soundex+"' order by artistPopularityAll desc limit "+str(N)+";")
 	artist_ids = cur.fetchall()
 	
-	return [str(i[0]) for i in artist_ids]
+	return [str(i[0]) for i in artist_ids][:N]
 
+def distinctify(seq):
+    seen = set()
+    seen_add = seen.add
+    return [ x for x in seq if not (x in seen or seen_add(x))]
 
+def artist_id_search(name,N=20,feelinglucky=False):
+	# first search for an exact match
+	db = mysql_get_db()
+	cur = db.cursor()
+	cur.execute("SELECT distinct A.ArtistId FROM Artists as A join (SELECT distinct ArtistId from ArtistAlias where replace(artistAlias,' ','') = '"+name.replace(' ','')+"') as AA on A.ArtistId=AA.ArtistId order by artistPopularityAll desc limit "+str(N)+";")
+	exact = cur.fetchall()
+	
+	exact_match = distinctify([str(i[0]) for i in exact])
+	
+	if(feelinglucky):
+		if(len(exact_match)>0):
+			return exact_match[0]
+	
+	if(len(exact_match)>=N):
+		return exact_match[:N]
+	
+	# now search for soundex in ArtistAlias table
+	cur = db.cursor()
+	cur.execute("select concat('%',splitname('"+name+"'),'%') limit 1;")
+	soundex = cur.fetchone()[0]
+	soundex = soundex.replace(' ','')
+	
+	cur = db.cursor()
+	cur.execute("SELECT distinct A.ArtistId FROM Artists as A join (SELECT distinct ArtistId from ArtistAlias where replace(AliasSound,' ','') like '"+soundex+"') as AA on A.ArtistId=AA.ArtistId order by artistPopularityAll desc limit "+str(N)+";")
+	
+	approx = cur.fetchall()
+	
+	approx_match = [str(i[0]) for i in approx]
+	
+	if(feelinglucky):
+		if(len(approx_match)>0):
+			return approx_match[0]
+	
+	return distinctify( exact_match+approx_match )[:N]
+	
 def lookup_songs_of_artist(id,N=10):
 
 	db = mysql_get_db()
@@ -393,7 +432,7 @@ def search_artist_id_lookup_soundslike():
 	
 	search = request.form['search_term']
 	
-	artistId = artist_id_lookup_soundslike(search)
+	artistId = artist_id_search(search,N=1,feelinglucky=True)
 	
 	if artistId is not None:
 		return json.dumps({'id':artistId,'status':'success'})
@@ -442,7 +481,8 @@ def artist_page(id=None):
 @app.route("/artistsearch/",methods=['POST'])
 def artist_search_page():
 	search_term = request.form['searchbox']
-	artist_ids = artist_id_search_soundslike(search_term,N=50)
+		
+	artist_ids = artist_id_search(search_term,N=50,feelinglucky=False)
 	artist_names = [artist_name_lookup(str(i)) for i in artist_ids]
 	return render_template('artist_search.html',search_term=search_term,artists=itertools.izip(artist_ids,artist_names))
 
