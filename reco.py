@@ -150,6 +150,19 @@ def discogs_search_artist(a):
 		return None
 
 def get_album_cover_urls_for_artist(a,N=3):
+	result = try_get_album_cover_urls_for_artist(a,N)
+
+	if len(result)<1:
+		aliases = artist_aliases_lookup(a,by='name')
+		for al in aliases:
+			result = try_get_album_cover_urls_for_artist(al,N)
+			if len(result)>0:
+				break
+	return result
+		
+			
+
+def try_get_album_cover_urls_for_artist(a,N=3):
 	"""
 	Grab the first N (default is 3) album cover urls from the Discogs search results for an artist
 	"""
@@ -240,6 +253,21 @@ def distinctify(seq):
     seen = set()
     seen_add = seen.add
     return [ x for x in seq if not (x in seen or seen_add(x))]
+
+def artist_aliases_lookup(x,by='id'):
+
+	db = mysql_get_db()
+	
+
+	if(by!='id'): # then assume searching by name
+		x = artist_id_lookup(x)
+	
+	cur = db.cursor()
+	cur.execute("select distinct artistAlias from ArtistAlias where artistId='"+str(x)+"';")
+	aliases = cur.fetchall()
+	
+	aliases = [i[0] for i in aliases]		
+	return aliases
 
 def artist_id_search_cached(name,N=20,feelinglucky=False):
 	q=name+str(N)+str(feelinglucky)
@@ -505,7 +533,10 @@ def json_get_album_cover_urls_for_artist(by,artist,N=1):
 		artist_name=artist_name_lookup(artist)
 	else:
 		artist_name=artist
-	return json.dumps(get_album_cover_urls_for_artist(artist_name,N=N))
+	
+	results = get_album_cover_urls_for_artist(artist_name,N=N)
+		
+	return json.dumps(results)
 
 @app.route("/genres")	
 def genres():
