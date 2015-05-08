@@ -376,33 +376,50 @@ def index():
 	q = "select youtubeId,songName,url from trenSong order by viewCount desc limit 30;"
 	cur.execute(q)
 	songs_t = cur.fetchall()
-	songs = [i for i in songs_t]
-	while len(songs) > Nlim :
-		tmp = random.choice(songs)
-		songs.remove(tmp)		
+	songs_list = [i for i in songs_t]
+	slen = len(songs_list)
+	w = [1.2 * slen - i for i in range(slen)]
+	sum_w = sum(w)
+	weight = [float(i)/sum_w for i in w]
+	
+	song_ind = np.random.choice([i for i in range(slen)], Nlim, replace = False, p = weight)	
+	songs = [songs_list[i] for i in song_ind]	
+		
 	tren_song = []
 	for song in songs:
 		tren_song.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
 	
 	
 	#Trending Artists
-	q = "select distinct artistName, artistId from recArtist limit 50;"
+	q = "select distinct artistName, artistId from recArtist order by artistPopularityRecent Desc limit 50;"
 	cur.execute(q)	
 	dbresults_t = cur.fetchall()
-	dbresults = [i for i in dbresults_t]
-	while len(dbresults) > Nlim :
-		tmp = random.choice(dbresults)
-		dbresults.remove(tmp)	
+
+	artist_list = [i for i in dbresults_t]
+	alen = len(artist_list)
+	w = [1.2 * alen - i for i in range(alen)]
+	sum_w = sum(w)
+	weight = [float(i)/sum_w for i in w]
+	
+	artist_ind = np.random.choice([i for i in range(alen)], Nlim, replace = False, p = weight)	
+	dbresults = [artist_list[i] for i in artist_ind ]
+
 	tren_artist = [ {'name':n,'id':i} for (n,i) in dbresults]
 	
 	#popular Songs
 	q = "select youtubeId,songName,url from popuSong order by viewCount desc limit 30;"
 	cur.execute(q)
 	songs_t = cur.fetchall()
-	songs = [i for i in songs_t]	
-	while len(songs) > Nlim :
-		tmp = random.choice(songs)
-		songs.remove(tmp)
+
+	songs_list = [i for i in songs_t]
+	slen = len(songs_list)
+	w = [1.2 * slen - i for i in range(slen)]
+	sum_w = sum(w)
+	weight = [float(i)/sum_w for i in w]
+	
+	song_ind = np.random.choice([i for i in range(slen)], Nlim, replace = False, p = weight)	
+	songs = [songs_list[i] for i in song_ind]
+	
 	popu_song = []
 	for song in songs:
 		popu_song.append({'youtubeId':song[0],'songName':song[1],'url':song[2]})
@@ -411,10 +428,16 @@ def index():
 	q = "select distinct artistName, artistId from popuArtist group by artistName order by artistPopularityAll Desc limit 50;"
 	cur.execute(q)	
 	dbresults_t = cur.fetchall()
-	dbresults = [i for i in dbresults_t]
-	while len(dbresults) > Nlim :
-		tmp = random.choice(dbresults)
-		dbresults.remove(tmp)
+	
+	artist_list = [i for i in dbresults_t]
+	alen = len(artist_list)
+	w = [1.2 * alen - i for i in range(alen)]
+	sum_w = sum(w)
+	weight = [float(i)/sum_w for i in w]
+	
+	artist_ind = np.random.choice([i for i in range(alen)], Nlim, replace = False, p = weight)	
+	dbresults = [artist_list[i] for i in artist_ind]	
+
 	popu_artist = [ {'name':n,'id':i} for (n,i) in dbresults]	
 	
 	return render_template('index.html', form=form, popu_artist=popu_artist,popu_song=popu_song, tren_artist=tren_artist, tren_song = tren_song)
