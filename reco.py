@@ -241,11 +241,21 @@ def distinctify(seq):
     seen_add = seen.add
     return [ x for x in seq if not (x in seen or seen_add(x))]
 
+def artist_id_search_cached(name,N=20,feelinglucky=False):
+	q=name+str(N)+str(feelinglucky)
+	
+	if( q in cache ):
+		return cache[q]
+	else:
+		return artist_id_search(name,N,feelinglucky)
+
 def artist_id_search(name,N=20,feelinglucky=False):
+	
+
 	# first search for an exact match
 	db = mysql_get_db()
 	cur = db.cursor()
-	cur.execute("SELECT distinct A.ArtistId FROM Artists as A join (SELECT distinct ArtistId from ArtistAlias where replace(artistAlias,' ','') = '"+name.replace(' ','')+"') as AA on A.ArtistId=AA.ArtistId order by artistPopularityAll desc limit "+str(N)+";")
+	cur.execute("SELECT distinct ArtistId from ArtistAlias where replace(artistAlias,' ','') = '"+name.replace(' ','')+"' limit "+str(N)+";")
 	exact = cur.fetchall()
 	
 	exact_match = distinctify([str(i[0]) for i in exact])
@@ -264,7 +274,7 @@ def artist_id_search(name,N=20,feelinglucky=False):
 	soundex = soundex.replace(' ','')
 	
 	cur = db.cursor()
-	cur.execute("SELECT distinct A.ArtistId FROM Artists as A join (SELECT distinct ArtistId from ArtistAlias where replace(AliasSound,' ','') like '"+soundex+"') as AA on A.ArtistId=AA.ArtistId order by artistPopularityAll desc limit "+str(N)+";")
+	cur.execute("SELECT distinct ArtistId from ArtistAlias where replace(AliasSound,' ','') like '"+soundex+"' limit "+str(N)+";")
 	
 	approx = cur.fetchall()
 	
@@ -273,6 +283,8 @@ def artist_id_search(name,N=20,feelinglucky=False):
 	if(feelinglucky):
 		if(len(approx_match)>0):
 			return approx_match[0]
+	
+	results = distinctify( exact_match+approx_match )[:N]
 	
 	return distinctify( exact_match+approx_match )[:N]
 	
@@ -432,7 +444,7 @@ def search_artist_id_lookup_soundslike():
 	
 	search = request.form['search_term']
 	
-	artistId = artist_id_search(search,N=1,feelinglucky=True)
+	artistId = artist_id_search_cached(search,N=1,feelinglucky=True)
 	
 	if artistId is not None:
 		return json.dumps({'id':artistId,'status':'success'})
@@ -482,7 +494,7 @@ def artist_page(id=None):
 def artist_search_page():
 	search_term = request.form['searchbox']
 		
-	artist_ids = artist_id_search(search_term,N=50,feelinglucky=False)
+	artist_ids = artist_id_search_cached(search_term,N=15,feelinglucky=False)
 	artist_names = [artist_name_lookup(str(i)) for i in artist_ids]
 	return render_template('artist_search.html',search_term=search_term,artists=itertools.izip(artist_ids,artist_names))
 
