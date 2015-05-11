@@ -10,6 +10,17 @@ class ArtistRecommender(object):
 		
 		# transform dimensions of U to be from 0 to 1
 		
+		# move outliers
+		
+		self.Umax = np.mean(self.U,0)+25*np.std(self.U,0)
+		self.Umin = np.mean(self.U,0)-25*np.std(self.U,0)
+		
+		ndims=self.U.shape[1]
+		
+		for d in xrange(0,ndims):		
+			self.U[ self.U[:,d]<self.Umin[d], d] = self.Umin[d]
+			self.U[ self.U[:,d]>self.Umax[d], d] = self.Umax[d]
+		
 		self.Umax = np.max(self.U,0)
 		self.Umin = np.min(self.U,0)
 		self.Urange = self.Umax - self.Umin

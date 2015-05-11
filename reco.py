@@ -480,7 +480,7 @@ def recommend_json():
 def recommend_searchnear_json():
 	xs = [float(request.form[x]) for x in ['x0','x1','x2','x3','x4']]
 
-	[dist,ids,points]=get_recommender().searchnear(xs,k=20)
+	[dist,ids,points]=get_recommender().searchnear(xs,k=25)
 
 	names = [artist_name_lookup(i) for i in ids]
 	
