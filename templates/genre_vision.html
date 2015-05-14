@@ -111,12 +111,12 @@ div.maxside{
 			var label_array = [];
 			var anchor_array = [];
 			  			
-			/*var w = 1200;
+			var w = 1140;
 			var h = 400;
 			
-			var wpadding=0.25;
-			var hpadding=0.25;
-			*/
+			var wpadding=0.2;
+			var hpadding=0.2;
+			
 			
 			for (i = 0; i < data.length; i++) {
 					data[i][8]=data[i][0];
@@ -138,10 +138,15 @@ div.maxside{
 				if(y<ymin) ymin=y;				
 			}
 
+			delx = xmax-xmin;
+			dely = ymax-ymin;
+			
+			if (delx==0) delx=1;
+			if (dely==0) dely=1;
 			
 			for (i = 0; i < data.length; i++) {
-				data[i][8]=w*wpadding+(data[i][8]-xmin)*w*(1-2*wpadding)/(xmax-xmin);
-				data[i][9]=h*hpadding+(data[i][9]-ymin)*h*(1-2*hpadding)/(ymax-ymin);
+				data[i][8]=w*wpadding+(data[i][8]-xmin)*w*(1-2*wpadding)/delx;
+				data[i][9]=h*hpadding+(data[i][9]-ymin)*h*(1-2*hpadding)/dely;
 			}
 			
 			for (i = 0; i< data.length; i++){
@@ -158,6 +163,7 @@ div.maxside{
 				.enter()
 				.append("circle")
 			   .attr("cx", function(d) {
+				   console.log(d);
 					return d[8];
 			   })
 			   .attr("cy", function(d) {
